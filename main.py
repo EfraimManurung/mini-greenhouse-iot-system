@@ -34,6 +34,7 @@ def read_sensor_data(bus, address):
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
+#time.sleep(2) #wait here to aovid 121 IO Error
 
 # List of addresses to read from
 addresses = [0x76, 0x77]

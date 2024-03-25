@@ -7,6 +7,8 @@ import time
 import smbus2
 import bme280
 import os
+# Import custom miscellaneous functions
+from misc.misc import average_sensor_data
 
 # Declared variables
 iteration = 0
@@ -15,9 +17,6 @@ iteration = 0
 running = True
 
 # Functions that will be used
-def celsius_to_fahrenheit(celsius):
-    return (celsius * 9/5) + 32
-
 def read_sensor_data(bus, address):
     # Load calibration parameters
     calibration_params = bme280.load_calibration_params(bus, address)
@@ -27,22 +26,20 @@ def read_sensor_data(bus, address):
         data = bme280.sample(bus, address, calibration_params)
 
         # Extract temperature, pressure, and humidity
-        temperature_celsius = data.temperature
+        temperature = data.temperature
         pressure = data.pressure
         humidity = data.humidity
-
-        # Print the readings on the shell
-        print("Address 0x{0:02X}, Temp={1:0.1f}ºC, Humidity={2:0.1f}, Pressure={3:0.1f}".format(address, temperature_celsius, humidity, pressure))
-
+        
     except Exception as e:
         print('An unexpected error occurred at address 0x{:02X}:'.format(address), str(e))
     
-    return temperature_celsius, pressure, humidity
+    return temperature, pressure, humidity
     
-def write_sensor_data(temperature_celsius, humidity, pressure):
+def write_sensor_data(temperature, humidity, pressure):
     #save time, data, temperature, and humidity in .txt file
-    file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', 0x{:02X}, {:.2f}, {:.2f}, {:.2f}\n'.format(address, temperature_celsius, humidity, pressure))
-        
+    file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', 0x{:02X}, {:.2f}, {:.2f}, {:.2f}\n'.format(address, temperature, humidity, pressure))
+
+
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
 
@@ -64,12 +61,16 @@ while running:
         print("Iteration : ", iteration)
         for address in addresses:
             # Read sensor data
-            temperature_celsius, humidity, pressure = read_sensor_data(bus, address)
+            temperature, humidity, pressure = read_sensor_data(bus, address)
             
-            write_sensor_data(temperature_celsius, humidity, pressure)
+            # Averaging the sensor data
+            averaged_temperature, averaged_humidity, averaged_pressure = average_sensor_data(address, temperature, humidity, pressure)
+            
+            # Write it on the txt file
+            write_sensor_data(averaged_temperature, averaged_humidity, averaged_pressure)
 
         # Wait for a few seconds before the next reading
-        time.sleep(10)
+        # time.sleep(10)
         print("")
         print("")
         

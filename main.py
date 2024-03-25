@@ -6,7 +6,7 @@
 import time
 import smbus2
 import os
-from misc.Sensors import Sensors
+from misc.SensorsBme280 import SensorsBme280
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -15,7 +15,7 @@ bus = smbus2.SMBus(1)
 addresses = [0x76, 0x77]
 
 # Create an instance of the Sensors class
-sensors = Sensors(bus)
+sensors = SensorsBme280(bus)
 
 # Check if the file exists before opening it in 'a' mode (append mode)
 file_exists = os.path.isfile('sensor_readings.txt')
@@ -40,11 +40,6 @@ try:
             
             # Write it on the txt file
             sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure, file)
-
-        # Wait for a few seconds before the next reading
-        # time.sleep(10)
-        print("")
-        print("")
         
 except KeyboardInterrupt:
     print('Program stopped')

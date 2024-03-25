@@ -12,10 +12,10 @@ from misc.SensorsBme280 import SensorsBme280
 bus = smbus2.SMBus(1)
 
 # List of addresses to read from
-addresses = [0x76, 0x77]
+bme280_addresses = [0x76, 0x77]
 
 # Create an instance of the Sensors class
-sensors = SensorsBme280(bus)
+bme280_sensors = SensorsBme280(bus)
 
 # Check if the file exists before opening it in 'a' mode (append mode)
 file_exists = os.path.isfile('sensor_readings.txt')
@@ -31,15 +31,15 @@ try:
     while True:
         iteration += 1
         print("Iteration : ", iteration)
-        for address in addresses:
+        for address in bme280_addresses:
             # Read sensor data
-            temperature, humidity, pressure = sensors.read_sensor_data(address)
+            temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
             
             # Averaging the sensor data
-            averaged_temperature, averaged_humidity, averaged_pressure = sensors.average_sensor_data(address, temperature, humidity, pressure)
+            averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(address, temperature, humidity, pressure)
             
             # Write it on the txt file
-            sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure, file)
+            bme280_sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure, file)
         
 except KeyboardInterrupt:
     print('Program stopped')

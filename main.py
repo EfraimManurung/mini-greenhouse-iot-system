@@ -30,15 +30,18 @@ try:
         print("Iteration : ", iteration)
         
         # bme280 sensors
-        # for address in bme280_addresses:
-        #     # Read sensor data
-        #     temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
+        for address in bme280_addresses:
+            # Read sensor data
+            temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
             
-        #     # Averaging the sensor data
-        #     averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(address, temperature, humidity, pressure)
+            # Averaging the sensor data
+            averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(address, temperature, humidity, pressure)
             
-        #     # Write it on the txt file
-        #     bme280_sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure)
+            # Write it on the txt file
+            bme280_sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure)
+            
+            # logging Raspberry Pi environmental data to InfluxDB
+            logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_humidity, averaged_pressure, 50.5)
         
         # mh_z19b sensors
         
@@ -47,11 +50,6 @@ try:
         # for address in bh1750_addresses:
         #     # Read sensor data
         #     light = bh1750_sensors.read_sensor_data(address, bh1750_command_read_address)
-        
-        # logging Raspberry Pi environmental data to InfluxDB
-        # logging_data.send_to_influxdb("1", "22", 1001, 85, 707)
-        # def send_to_influxdb(self, measurement, location, temperature, pressure, humidity, light)
-        logging_data.send_to_influxdb("measurement_name", "location_name", 22.57, 1000.54, 79.80, 707.77)
         
 except KeyboardInterrupt:
     print('Program stopped')

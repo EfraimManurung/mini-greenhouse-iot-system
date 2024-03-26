@@ -26,7 +26,7 @@ class SensorBme280:
             pressure = None
             humidity = None
         
-        return temperature, pressure, humidity
+        return temperature, humidity, pressure
 
     def average_sensor_data(self, address, temperature, humidity, pressure):
         count = 10

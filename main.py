@@ -1,5 +1,5 @@
 # greenhouse-iot-system
-# Efraim Manurung
+# Author: Efraim Manurung
 # MSc Thesis in Information Technology Group, Wageningen University
 
 # Import libraries that needed for the project
@@ -7,6 +7,7 @@ import smbus2
 from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.LoggingData import LoggingData
+
 # from misc.LoggingData 
 
 # Initialize I2C bus
@@ -44,7 +45,7 @@ try:
             logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_humidity, averaged_pressure, 50.5)
         
         # mh_z19b sensors
-        
+        # 
         
         # bh1750 sensors
         # for address in bh1750_addresses:

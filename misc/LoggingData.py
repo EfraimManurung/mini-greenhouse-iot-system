@@ -2,7 +2,6 @@
 # https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-the-raspberry-pi-4/
 # https://sandyjmacdonald.github.io/2021/12/29/logging-raspberry-pi-environmental-data-to-influxdb/
 # import libraries
-import time
 import datetime
 from influxdb import InfluxDBClient
 

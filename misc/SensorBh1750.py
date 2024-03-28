@@ -46,7 +46,7 @@ class SensorBh1750:
         with open('sensor_readings_bh1750.txt', 'a') as file:
             # Write the header to the file if the file does not exist
             if not file_exists:
-                file.write('Time and Data, sensor address, light(lux))\n')
+                file.write('Time and Data, sensor address, light(lux)\n')
             
             # Write sensor data to the file
             file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', 0x{:02X}, {:.2f}\n'.format(address, light))

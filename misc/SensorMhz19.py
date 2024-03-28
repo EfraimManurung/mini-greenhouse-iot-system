@@ -1,3 +1,7 @@
+# Source website to work on the serial
+# https://roboticsbackend.com/raspberry-pi-arduino-serial-communication/
+# Try to manipulate it MH-Z19C (UART) -> (UART) ESP32 (USB-Serial)-> (USB-Serial) Raspberry Pi
+
 import serial
 import time
 import os
@@ -75,6 +79,3 @@ class SensorMhz19:
             # Write sensor data to the file
             file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', {:.2f}, {:.2f}\n'.format(_averaged_co2, _averaged_temp))
     
-
-            
-        

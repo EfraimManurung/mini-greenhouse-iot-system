@@ -17,8 +17,8 @@ class SensorBme280:
 
             # Extract temperature, pressure, and humidity
             temperature = data.temperature
-            pressure = data.pressure
             humidity = data.humidity
+            pressure = data.pressure
             
         except Exception as e:
             print('ERROR: An unexpected bme280 error occurred at address 0x{:02X}:'.format(address), str(e))

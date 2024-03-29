@@ -32,29 +32,31 @@ try:
     iteration = 0
     while True:
         iteration += 1
+        time.sleep(1)
+        
         print("Iteration : ", iteration)
         
-        # mh_z19b sensors
-        # Read sensor data
-        # time.sleep(10.0)
-        co2, temperature_co2 = mhz19_sensor.read_sensor_data()
-        #mhz19_sensor.read_write_sensor_data()
-        
-        time.sleep(3.0)
-        # bme280 sensors
-        for address in bme280_addresses:
+        if iteration == 10:
+            # mh_z19b sensors
             # Read sensor data
-            temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
+            co2, temperature_co2 = mhz19_sensor.read_sensor_data()
+            #mhz19_sensor.read_write_sensor_data()
+            time.sleep(3.0)
             
-            # Averaging the sensor data
-            averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(address, temperature, humidity, pressure)
-            
-            # Write it on the txt file
-            # bme280_sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure)
-            
-            # logging Raspberry Pi environmental data to InfluxDB
-            logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, 50.5, co2, temperature_co2)
-        
+            # bme280 sensors
+            for address in bme280_addresses:
+                # Read sensor data
+                temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
+                
+                # Averaging the sensor data
+                averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(address, temperature, humidity, pressure)
+                
+                # Write it on the txt file
+                # bme280_sensors.write_sensor_data(address, averaged_temperature, averaged_humidity, averaged_pressure)
+                
+                # logging Raspberry Pi environmental data to InfluxDB
+                logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, 50.5, co2, temperature_co2)
+            iteration = 0
         # AVeraging the sensor data
         # averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(co2, temperature_co2)
         

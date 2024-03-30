@@ -19,7 +19,7 @@ client = InfluxDBClient(host, port, username, password, db)
 
 class LoggingData:
     def __init__(self):
-        print("InfluxDB Start!")
+        print("LoggingData Start!")
     
     # Logs the data to your InfluxDB
     def send_to_influxdb(self, measurement, location, temperature, pressure, humidity, light, co2, temperature_co2):

@@ -7,6 +7,7 @@ class SensorBh1750:
     def __init__(self, bus):
         # Rev 2 of Raspberry Pi and all newer use bus 1
         self.bus = bus
+        print("SensorBh1750 Start!")
     
     def read_sensor_data(self, address):
         try:
@@ -24,21 +25,9 @@ class SensorBh1750:
             print('ERROR: General unknown error')
         
         return float(light)
-    
-    # def average_sensor_data(self, address, light):
-    #     count = 10
-    #     light_total = 0
-        
-    #     for x in range(count):
-    #         light_total += light
-    #         time.sleep(1)
-        
-    #     _averaged_light = light_total / count
-    #     print("Averaged VALUES from Addres 0x{:02x}, Av_Light={:.2f} lux".format(address, light))
-        
-    #     return _averaged_light 
-    def average_sensor_data(self, address, light):
-        count = 10
+
+    def average_sensor_data(self, _count, address, light):
+        count = _count
         light_total = 0
         
         try:
@@ -56,7 +45,6 @@ class SensorBh1750:
         
         return _averaged_light 
 
-    
     def write_sensor_data(self, address, light):
         # Check if the file exists before opening it in 'a' mode (append mode)
         file_exists = os.path.isfile('sensor_readings_bh1750.txt')

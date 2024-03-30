@@ -6,6 +6,7 @@ import os
 class SensorBme280:
     def __init__(self, bus):
         self.bus = bus
+        print("SensorBme280 Start!")
 
     def read_sensor_data(self, address):
         # Load calibration parameters
@@ -28,8 +29,8 @@ class SensorBme280:
         
         return temperature, humidity, pressure
 
-    def average_sensor_data(self, address, temperature, humidity, pressure):
-        count = 10
+    def average_sensor_data(self, _count, address, temperature, humidity, pressure):
+        count = _count
         temperature_total = 0
         humidity_total = 0
         pressure_total = 0

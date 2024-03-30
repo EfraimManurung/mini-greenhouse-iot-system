@@ -8,10 +8,10 @@ class SensorBh1750:
         # Rev 2 of Raspberry Pi and all newer use bus 1
         self.bus = bus
     
-    def read_sensor_data(self, address, command_read):
+    def read_sensor_data(self, address):
         try:
             # Read sensor data
-            data = self.bus.read_i2c_block_data(address, command_read)
+            data = self.bus.read_i2c_block_data(address, 0x10, 2)
             result = (data[1] + (256 * data[0])) / 1.2
             light = format(result,'.0f') 
             
@@ -23,20 +23,39 @@ class SensorBh1750:
         except:
             print('ERROR: General unknown error')
         
-        return light
+        return float(light)
     
+    # def average_sensor_data(self, address, light):
+    #     count = 10
+    #     light_total = 0
+        
+    #     for x in range(count):
+    #         light_total += light
+    #         time.sleep(1)
+        
+    #     _averaged_light = light_total / count
+    #     print("Averaged VALUES from Addres 0x{:02x}, Av_Light={:.2f} lux".format(address, light))
+        
+    #     return _averaged_light 
     def average_sensor_data(self, address, light):
         count = 10
         light_total = 0
+        
+        try:
+            light = float(light)  # Convert to float if it's a string
+        except ValueError:
+            print("ERROR: Invalid value for light:", light)
+            return None
         
         for x in range(count):
             light_total += light
             time.sleep(1)
         
         _averaged_light = light_total / count
-        print("Averaged VALUES from Addres 0x{:02x}, Av_Light={:.2f} lux".format(address, light))
+        print("Averaged VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
         
         return _averaged_light 
+
     
     def write_sensor_data(self, address, light):
         # Check if the file exists before opening it in 'a' mode (append mode)

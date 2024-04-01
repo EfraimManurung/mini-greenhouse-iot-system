@@ -18,8 +18,7 @@ bus = smbus2.SMBus(1)
 # List of addresses
 bme280_addresses = [0x76, 0x77]
 # mhz19_address = '/dev/ttyUSB0'
-bh1750_addresses = 0x23 #[0x23]
-bh1750_command_read_address = [0x10]
+bh1750_addresses = [0x23] #[0x23]
 
 # Create an instance of the Classes
 bme280_sensors = SensorBme280(bus)
@@ -36,28 +35,25 @@ try:
         
         print("Iteration : ", iteration)
         
-        if iteration == 5:
-            sensor_data = {}
-            
+        if iteration == 60:            
             # mh_z19b sensors
             # co2, temperature_co2 = mhz19_sensor.read_sensor_data()
-            co2 = 0.0
-            temperature_co2 = 0.0
-            
-            # bh1750 sensors
-            light = bh1750_sensors.read_sensor_data(bh1750_addresses)
-            averaged_light = bh1750_sensors.average_sensor_data(3, bh1750_addresses, light)
-                
+                  
             # bme280 sensors
+            for address in bh1750_addresses:
+                light = bh1750_sensors.read_sensor_data(address)
+                averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
+                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None)
+    
             for address in bme280_addresses:
                 temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
-                
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", address, temperature, pressure, humidity, light, co2, temperature_co2)
-  
+                logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None)
+    
             iteration = 0
-        
+            
 except KeyboardInterrupt:
     print('Program stopped')
 

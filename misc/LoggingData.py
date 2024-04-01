@@ -22,18 +22,15 @@ class LoggingData:
         print("LoggingData Start!")
     
     # Logs the data to your InfluxDB
-    def send_to_influxdb(self, measurement, location, temperature, pressure, humidity, light, co2, temperature_co2):
+    def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
+                         humidity = None , light = None, co2 = None, temperature_co2 = None):
         # Get the current UTC timestamp
-        timestamp_utc = datetime.datetime.now(datetime.timezone.utc)
-        
-        # Define the timezone you want to convert to (e.g., Europe/Amsterdam)
-        target_timezone = pytz.timezone('Europe/Amsterdam')
-        
-        # Convert the UTC timestamp to the target timezone
-        timestamp = timestamp_utc.astimezone(target_timezone)
-        
-        # Adjust the timestamp by one hour
-        timestamp += datetime.timedelta(hours=1)
+        utc_timestamp = datetime.datetime.now(datetime.timezone.utc)
+
+        # Add 2 hours to the UTC timestamp
+        timestamp = utc_timestamp + datetime.timedelta(hours=2)
+
+        print("Amsterdam Time:", timestamp)
         
         # Create the payload
         payload = [

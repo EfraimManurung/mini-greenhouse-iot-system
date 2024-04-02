@@ -24,16 +24,15 @@ bme280_addresses = [0x76, 0x77]
 bh1750_addresses = [0x23] 
 
 # List of GPIOs
-LED_GPIO = 13
+LEDStrip_GPIO = 13
 
 # Create an instance of the Classes
 bme280_sensors = SensorBme280(bus)
 # mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
 logging_data = LoggingData()
-LED_actuators = ActuatorLED(LED_GPIO)
 
-LED_actuators.actuate_LED(5, 10)
+LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO)
 
 # Main loop 
 try:
@@ -52,6 +51,11 @@ try:
             for address in bh1750_addresses:
                 light = bh1750_sensors.read_sensor_data(address)
                 averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
+                
+                # Actuating
+                # actuate_LED(self, current_value, set_point)
+                LEDStrip_actuator.actuate_LED(averaged_light, 15.0)
+
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                 logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None)
     

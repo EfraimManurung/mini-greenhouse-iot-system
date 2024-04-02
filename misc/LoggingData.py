@@ -25,12 +25,10 @@ class LoggingData:
     def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
                          humidity = None , light = None, co2 = None, temperature_co2 = None):
         # Get the current UTC timestamp
-        utc_timestamp = datetime.datetime.now(datetime.timezone.utc)
+        timestamp = datetime.datetime.now(datetime.timezone.utc)
 
         # Add 2 hours to the UTC timestamp
-        timestamp = utc_timestamp + datetime.timedelta(hours=2)
-
-        print("Amsterdam Time:", timestamp)
+        # timestamp = utc_timestamp + datetime.timedelta(hours=2)
         
         # Create the payload
         payload = [

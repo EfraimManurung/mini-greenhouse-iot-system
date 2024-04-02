@@ -6,11 +6,14 @@
 import time
 import smbus2
 
-# Import custom classes
+# Import sensor classes
 from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.SensorMhz19 import SensorMhz19
 from misc.LoggingData import LoggingData
+
+# Import actuator class
+from misc.ActuatorLED import ActuatorLED
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -18,13 +21,19 @@ bus = smbus2.SMBus(1)
 # List of addresses
 bme280_addresses = [0x76, 0x77]
 # mhz19_address = '/dev/ttyUSB0'
-bh1750_addresses = [0x23] #[0x23]
+bh1750_addresses = [0x23] 
+
+# List of GPIOs
+LED_GPIO = 13
 
 # Create an instance of the Classes
 bme280_sensors = SensorBme280(bus)
 # mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
 logging_data = LoggingData()
+LED_actuators = ActuatorLED(LED_GPIO)
+
+LED_actuators.actuate_LED(5, 10)
 
 # Main loop 
 try:
@@ -35,7 +44,7 @@ try:
         
         print("Iteration : ", iteration)
         
-        if iteration == 60:            
+        if iteration == 10:            
             # mh_z19b sensors
             # co2, temperature_co2 = mhz19_sensor.read_sensor_data()
                   

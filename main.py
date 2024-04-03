@@ -10,6 +10,7 @@ import smbus2
 from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.SensorMhz19 import SensorMhz19
+from misc.SensorDs18b20 import SensorDs18b20
 from misc.LoggingData import LoggingData
 
 # Import actuator class
@@ -21,27 +22,38 @@ bus = smbus2.SMBus(1)
 # List of addresses
 bme280_addresses = [0x76, 0x77]
 # mhz19_address = '/dev/ttyUSB0'
-bh1750_addresses = [0x23] 
+bh1750_addresses = [0x23, 0x5c] 
+ds18b20_address = "GPIO4-One-Wire"
 
 # List of GPIOs
 LEDStrip_GPIO = 13
+LEDBlink_GPIO = 26
 
-# Create an instance of the Classes
+# Create an instance of the sensor classes
 bme280_sensors = SensorBme280(bus)
 # mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
+ds18b20_sensor = SensorDs18b20()
 logging_data = LoggingData()
 
+# Create an instance of the actuator classes
 LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO)
+LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO)
+
+# Blink LED 10 times to indicate the programe is started
+LEDBlink_actuator.blink_LED(10)
 
 # Main loop 
 try:
     iteration = 0
+    
+    # Prompt the user for the set point value
+    # light_set_point = float(input("Enter the set point value: "))
+    light_set_point = 15.0
     while True:
         iteration += 1
-        time.sleep(1)
-        
         print("Iteration : ", iteration)
+        LEDBlink_actuator.blink_LED(5)
         
         if iteration == 10:            
             # mh_z19b sensors
@@ -54,17 +66,23 @@ try:
                 
                 # Actuating
                 # actuate_LED(self, current_value, set_point)
-                LEDStrip_actuator.actuate_LED(averaged_light, 15.0)
+                LEDStrip_actuator.actuate_LED(averaged_light, light_set_point)
 
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None)
+                logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)
     
             for address in bme280_addresses:
                 temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None)
-    
+                logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None)
+
+            # ds18b20 sensor with 1-Wire
+            tank_temperature = ds18b20_sensor.read_sensor_data()
+            averaged_tank_temperature = ds18b20_sensor.average_sensor_data(3, ds18b20_address, tank_temperature)
+            # Send data to InfluxDB
+            logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, None, None, None, averaged_tank_temperature)
+
             iteration = 0
             
 except KeyboardInterrupt:

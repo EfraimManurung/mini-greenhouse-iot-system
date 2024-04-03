@@ -23,7 +23,7 @@ class LoggingData:
     
     # Logs the data to your InfluxDB
     def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
-                         humidity = None , light = None, co2 = None, temperature_co2 = None):
+                         humidity = None , light = None, co2 = None, temperature_co2 = None, tank_temperature = None):
         # Get the current UTC timestamp
         timestamp = datetime.datetime.now(datetime.timezone.utc)
 
@@ -43,7 +43,8 @@ class LoggingData:
                     "pressure": pressure,
                     "light": light,
                     "co2": co2,
-                    "co2_temp": temperature_co2
+                    "co2_temp": temperature_co2,
+                    "tank_temp": tank_temperature
                 }
             }
         ]

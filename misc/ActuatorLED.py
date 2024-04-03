@@ -20,10 +20,23 @@ class ActuatorLED:
         GPIO.setup(self.choosen_pin, GPIO.OUT)
         
     def actuate_LED(self, current_value, set_point):
+        print("CURRENT VALUE : ", current_value)
+        print("SET POINT : ", set_point)
+        
         if current_value < set_point:
-            GPIO.output(self.choosen_pin, GPIO.HIGH)
-        else:
             GPIO.output(self.choosen_pin, GPIO.LOW)
+            print("LIGHT TURN ON!!")
+        else:
+            GPIO.output(self.choosen_pin, GPIO.HIGH)
+            print("LIGHT TURN OFF!!")
+    
+    def blink_LED(self, _count):
+        for x in range (_count):
+            GPIO.output(self.choosen_pin, GPIO.LOW)
+            time.sleep(0.2)
+            GPIO.output(self.choosen_pin, GPIO.HIGH)
+            time.sleep(0.2)
+        
         
         
 

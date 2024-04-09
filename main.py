@@ -33,6 +33,13 @@ LEDBlink_GPIO = 12
 FANFront_GPIO = 16
 FANBack_GPIO = 24
 
+# PWM Frequency
+PWM_frequency = 60
+PWM_blink = 2
+
+# Duty cycle in percentage
+DT_blink = 50
+
 # Create an instance of the sensor classes
 bme280_sensors = SensorBme280(bus)
 mhz19_sensor = SensorMhz19(mhz19_address)
@@ -41,14 +48,11 @@ ds18b20_sensor = SensorDs18b20()
 logging_data = LoggingData()
 
 # Create an instance of the actuator classes
-LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO)
-LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO)
+LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
+LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_blink)
 
-FANFront_actuator = ActuatorFAN(FANFront_GPIO)
-FANBack_actuator = ActuatorFAN(FANBack_GPIO)
-
-# Blink LED 10 times to indicate the programe is started
-LEDBlink_actuator.blink_LED(10)
+FANFront_actuator = ActuatorFAN(FANFront_GPIO, PWM_frequency)
+# FANBack_actuator = ActuatorFAN(FANBack_GPIO)
 
 # Main loop 
 try:
@@ -56,18 +60,25 @@ try:
     
     # Prompt the user for the set point value
     # light_set_point = float(input("Enter the set point value: "))
-    light_set_point = 5.0
+    light_set_point = 15.0
     
     # Control for FAN 
     # def actuate_FAN(self, current_value, set_point)
-    FANFront_actuator.actuate_FAN(25.0, 27.0)
+    FANFront_actuator.actuate_FAN(27.0, 28.0, 50)
     
     while True:
         iteration += 1
         print("Iteration : ", iteration)
-        LEDBlink_actuator.blink_LED(5)
+        LEDBlink_actuator.blink_LED(DT_blink)
         
-        if iteration == 10:            
+        # Delay per 1 second
+        time.sleep(1)
+        
+        if iteration == 10:    
+            # Stop LED Blink
+            # LEDBlink_actuator.stop_blink_LED()
+            LEDBlink_actuator.blink_LED(100)
+                    
             # mh_z19b sensors
             co2, temperature_co2 = mhz19_sensor.read_sensor_data()
             averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(3, co2, temperature_co2)
@@ -81,8 +92,8 @@ try:
                 averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
                 
                 # Actuating
-                # actuate_LED(self, current_value, set_point)
-                LEDStrip_actuator.actuate_LED(averaged_light, light_set_point)
+                # actuate_LED(self, current_value, set_point, duty_cycle)
+                LEDStrip_actuator.actuate_LED(averaged_light, light_set_point, 100)
 
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                 logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)

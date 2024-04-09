@@ -6,36 +6,42 @@ v1.0: Make a simple class for the LED actuator
 '''
 
 import RPi.GPIO as GPIO
-import time
 
 class ActuatorLED:
-    def __init__ (self, LED_GPIO):
+    def __init__ (self, LED_GPIO, _frequency):
         self.choosen_pin = LED_GPIO
         
         print("ActuatorLED Start!")
-        # Set up GPIO mode
+         # Set up GPIO mode
         GPIO.setmode(GPIO.BCM)
         
         # Set up GPIO pin
         GPIO.setup(self.choosen_pin, GPIO.OUT)
         
-    def actuate_LED(self, current_value, set_point):
-        print("CURRENT VALUE : ", current_value)
-        print("SET POINT : ", set_point)
+        # Set up PWM pin
+        self._PWM = GPIO.PWM(self.choosen_pin, _frequency)
+        
+        # Start the PWM pin with 0% duty cycle
+        self._PWM.start(0)
+        
+    def actuate_LED(self, current_value, set_point, duty_cycle):
+        print("CURRENT VALUE LIGHT: ", current_value)
+        print("SET POINT LIGHT: ", set_point)
         
         if current_value < set_point:
-            GPIO.output(self.choosen_pin, GPIO.LOW)
+            self._PWM.ChangeDutyCycle(duty_cycle)
             print("LIGHT TURN ON!!")
         else:
-            GPIO.output(self.choosen_pin, GPIO.HIGH)
+            self._PWM.ChangeDutyCycle(0)
             print("LIGHT TURN OFF!!")
     
-    def blink_LED(self, _count):
-        for x in range (_count):
-            GPIO.output(self.choosen_pin, GPIO.LOW)
-            time.sleep(0.2)
-            GPIO.output(self.choosen_pin, GPIO.HIGH)
-            time.sleep(0.2)
+    def blink_LED(self, duty_cycle):
+        # Start the PWM pin set as 50% so it can blink 
+        self._PWM.start(duty_cycle)
+    
+    def stop_blink_LED(self):
+        # Stop the PWM pin 
+        self._PWM.stop()
     
     # def clean_LED(self):
     #     GPIO.cleanup

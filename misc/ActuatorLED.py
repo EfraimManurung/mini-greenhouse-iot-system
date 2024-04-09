@@ -2,7 +2,7 @@
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
 
-v1.0: Make a simple class for the actuator
+v1.0: Make a simple class for the LED actuator
 '''
 
 import RPi.GPIO as GPIO
@@ -36,6 +36,9 @@ class ActuatorLED:
             time.sleep(0.2)
             GPIO.output(self.choosen_pin, GPIO.HIGH)
             time.sleep(0.2)
+    
+    # def clean_LED(self):
+    #     GPIO.cleanup
         
         
         

@@ -31,7 +31,7 @@ LEDStrip_GPIO = 13
 LEDBlink_GPIO = 12
 
 FANFront_GPIO = 16
-FANBack_GPIO = 24
+FANBack_GPIO = 26
 
 # PWM Frequency
 PWM_frequency = 60
@@ -52,7 +52,7 @@ LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_blink)
 
 FANFront_actuator = ActuatorFAN(FANFront_GPIO, PWM_frequency)
-# FANBack_actuator = ActuatorFAN(FANBack_GPIO)
+FANBack_actuator = ActuatorFAN(FANBack_GPIO, PWM_frequency)
 
 # Main loop 
 try:
@@ -64,7 +64,8 @@ try:
     
     # Control for FAN 
     # def actuate_FAN(self, current_value, set_point)
-    FANFront_actuator.actuate_FAN(27.0, 28.0, 50)
+    FANFront_actuator.actuate_FAN(27.0, 25.0, 20)
+    FANBack_actuator.actuate_FAN(27.0, 25.0, 50)
     
     while True:
         iteration += 1

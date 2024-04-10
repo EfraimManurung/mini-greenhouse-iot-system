@@ -67,15 +67,15 @@ try:
     # light_set_point = float(input("Enter the set point value: "))
     light_set_point = 15.0
     
-    # Control for FAN 
-    # def actuate_FAN(self, current_value, set_point)
-    FANFront_actuator.actuate_FAN(27.0, 25.0, 50)
-    FANBack_actuator.actuate_FAN(27.0, 25.0, 50)
-    
-    # Testing SERVO with this method
-    SERVO_actuator.actuate_SERVO(700.0, 500.0, 12)
-    
     while True:
+        # Control for FAN 
+        # def actuate_FAN(self, current_value, set_point)
+        FANFront_actuator.actuate_FAN(27.0, 25.0, 50)
+        FANBack_actuator.actuate_FAN(27.0, 25.0, 50)
+            
+        # Testing SERVO with this method
+        SERVO_actuator.actuate_SERVO(700.0, 500.0, 12)
+    
         iteration += 1
         print("Iteration : ", iteration)
         LEDBlink_actuator.blink_LED(DT_blink)
@@ -84,6 +84,13 @@ try:
         time.sleep(1)
         
         if iteration == 10:    
+            # Control again the actuator
+            FANFront_actuator.actuate_FAN(27.0, 29.0, 50)
+            FANBack_actuator.actuate_FAN(27.0, 29.0, 50)
+            
+            # Close the window with the servo
+            SERVO_actuator.close_window(2)
+            
             # Stop LED Blink
             # LEDBlink_actuator.stop_blink_LED()
             LEDBlink_actuator.blink_LED(100)
@@ -119,6 +126,7 @@ try:
             # Send data to InfluxDB
             logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, None, None, None, averaged_tank_temperature)
 
+            
             iteration = 0
             
 except KeyboardInterrupt:

@@ -42,7 +42,7 @@ class ActuatorSERVO:
     
     def close_window(self, duty_cycle):
         print("FORCE CLOSE WINDOW!!")
-        self._PWM.ChangeDutyCycle(2)
+        self._PWM.ChangeDutyCycle(duty_cycle)
         
         
 

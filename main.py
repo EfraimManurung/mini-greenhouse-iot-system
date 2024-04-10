@@ -16,6 +16,7 @@ from misc.LoggingData import LoggingData
 # Import actuator class
 from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
+from misc.ActuatorSERVO import ActuatorSERVO
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -33,8 +34,10 @@ LEDBlink_GPIO = 12
 FANFront_GPIO = 16
 FANBack_GPIO = 26
 
+SERVO_GPIO = 6
+
 # PWM Frequency
-PWM_frequency = 60
+PWM_frequency = 50
 PWM_blink = 2
 
 # Duty cycle in percentage
@@ -54,6 +57,8 @@ LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_blink)
 FANFront_actuator = ActuatorFAN(FANFront_GPIO, PWM_frequency)
 FANBack_actuator = ActuatorFAN(FANBack_GPIO, PWM_frequency)
 
+SERVO_actuator = ActuatorSERVO(SERVO_GPIO, PWM_frequency)
+
 # Main loop 
 try:
     iteration = 0
@@ -64,8 +69,11 @@ try:
     
     # Control for FAN 
     # def actuate_FAN(self, current_value, set_point)
-    FANFront_actuator.actuate_FAN(27.0, 25.0, 20)
+    FANFront_actuator.actuate_FAN(27.0, 25.0, 50)
     FANBack_actuator.actuate_FAN(27.0, 25.0, 50)
+    
+    # Testing SERVO with this method
+    SERVO_actuator.actuate_SERVO(700.0, 500.0, 12)
     
     while True:
         iteration += 1

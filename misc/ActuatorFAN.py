@@ -25,7 +25,7 @@ class ActuatorFAN:
         self._PWM.start(0)
         
     def actuate_FAN(self, current_value, set_point, duty_cycle):
-        print("CURRENT VALUE  HUM(%) OR TEMP(°C): {:.2f}°C".format(current_value))
+        print("CURRENT VALUE  HUM(%) OR TEMP(°C): {:.2f}".format(current_value))
         print("SET POINT  HUM(%) OR TEMP(°C): {:.2f}".format(set_point))
         
         if current_value > set_point:

@@ -1,6 +1,7 @@
 # greenhouse-iot-system
 # Author: Efraim Manurung
 # MSc Thesis in Information Technology Group, Wageningen University
+# April, 2024
 
 # Import libraries that needed for the project
 import time
@@ -38,7 +39,7 @@ SERVO_GPIO = 6
 
 # PWM Frequency
 PWM_frequency = 50
-PWM_blink = 2
+PWM_frequency_for_blinking = 2
 
 # Duty cycle in percentage
 DT_blink = 50
@@ -47,12 +48,12 @@ DT_blink = 50
 bme280_sensors = SensorBme280(bus)
 mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
-ds18b20_sensor = SensorDs18b20()
+# ds18b20_sensor = SensorDs18b20()
 logging_data = LoggingData()
 
 # Create an instance of the actuator classes
 LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
-LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_blink)
+LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FANFront_actuator = ActuatorFAN(FANFront_GPIO, PWM_frequency)
 FANBack_actuator = ActuatorFAN(FANBack_GPIO, PWM_frequency)
@@ -65,7 +66,7 @@ try:
     
     # Prompt the user for the set point value
     # light_set_point = float(input("Enter the set point value: "))
-    light_set_point = 15.0
+    light_set_point = 250.0
     
     while True:
         # Control for FAN 
@@ -121,10 +122,10 @@ try:
                 logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None)
 
             # ds18b20 sensor with 1-Wire
-            tank_temperature = ds18b20_sensor.read_sensor_data()
-            averaged_tank_temperature = ds18b20_sensor.average_sensor_data(3, ds18b20_address, tank_temperature)
+            # tank_temperature = ds18b20_sensor.read_sensor_data()
+            # averaged_tank_temperature = ds18b20_sensor.average_sensor_data(3, ds18b20_address, tank_temperature)
             # Send data to InfluxDB
-            logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, None, None, None, averaged_tank_temperature)
+            # logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, None, None, None, averaged_tank_temperature)
 
             
             iteration = 0

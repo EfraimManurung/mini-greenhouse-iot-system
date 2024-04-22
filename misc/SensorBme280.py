@@ -9,10 +9,10 @@ class SensorBme280:
         print("SensorBme280 Start!")
 
     def read_sensor_data(self, address):
-        # Load calibration parameters
-        calibration_params = bme280.load_calibration_params(self.bus, address)
-
         try:
+            # Load calibration parameters
+            calibration_params = bme280.load_calibration_params(self.bus, address)
+
             # Read sensor data
             data = bme280.sample(self.bus, address, calibration_params)
 
@@ -22,7 +22,17 @@ class SensorBme280:
             pressure = data.pressure
             
         except Exception as e:
-            print('ERROR: An unexpected bme280 error occurred at address 0x{:02X}:'.format(address), str(e))
+            print('ERROR BME280: An unexpected bme280 error occurred at address 0x{:02X}:'.format(address), str(e))
+            temperature = None
+            pressure = None
+            humidity = None
+        except OSError:
+            print('ERROR BME280: BME280 I2C device not found. Please check BME280 wiring.')
+            temperature = None
+            pressure = None
+            humidity = None
+        except:
+            print('ERROR BME280: General unknown error')
             temperature = None
             pressure = None
             humidity = None
@@ -34,6 +44,10 @@ class SensorBme280:
         temperature_total = 0
         humidity_total = 0
         pressure_total = 0
+        
+        if None in [temperature, humidity, pressure]:
+            print("No valid data to average from sensor at address 0x{:02X}".format(address))
+            return None
         
         for x in range(count):
             temperature_total += temperature

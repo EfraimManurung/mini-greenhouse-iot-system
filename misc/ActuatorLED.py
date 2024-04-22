@@ -25,6 +25,7 @@ class ActuatorLED:
         self._PWM.start(0)
         
     def actuate_LED(self, current_value, set_point, duty_cycle):
+        # handle if the current_value is None  
         print("CURRENT VALUE LIGHT: ", current_value)
         print("SET POINT LIGHT: ", set_point)
         

@@ -14,22 +14,29 @@ class SensorBh1750:
             # Read sensor data
             data = self.bus.read_i2c_block_data(address, 0x10, 2)
             result = (data[1] + (256 * data[0])) / 1.2
-            light = format(result,'.0f') 
+            light = format(result, '.0f') 
             
         except Exception as e:
-            print('ERROR: An unexpected bh1750 error occurred at address 0x{:02X}:'.format(address), str(e))
+            print('ERROR BH1750: An unexpected bh1750 error occurred at address 0x{:02X}:'.format(address), str(e))
             light = None
         except OSError:
-            print('ERROR: bh1750 I2C device not found. Please check bh1750 wiring.')
+            print('ERROR BH1750: bh1750 I2C device not found. Please check bh1750 wiring.')
+            light = None
         except:
-            print('ERROR: General unknown error')
+            print('ERROR BH1750: General unknown error')
+            light = None
         
-        return float(light)
+        return light
 
     def average_sensor_data(self, _count, address, light):
         count = _count
         light_total = 0
+        valid_samples = 0  # Counter for valid samples
         
+        if light is None:
+            print("No valid data to average from sensor at address 0x{:02X}".format(address))
+            return None
+
         try:
             light = float(light)  # Convert to float if it's a string
         except ValueError:
@@ -38,12 +45,16 @@ class SensorBh1750:
         
         for x in range(count):
             light_total += light
+            valid_samples += 1
             time.sleep(1)
         
-        _averaged_light = light_total / count
-        print("Averaged VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
+        _averaged_light = light_total / valid_samples if valid_samples != 0 else None
+        
+        if _averaged_light is not None:
+            print("Averaged VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
         
         return _averaged_light 
+
 
     def write_sensor_data(self, address, light):
         # Check if the file exists before opening it in 'a' mode (append mode)

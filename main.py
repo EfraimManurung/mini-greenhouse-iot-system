@@ -12,6 +12,7 @@ from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.SensorMhz19 import SensorMhz19
 from misc.SensorDs18b20 import SensorDs18b20
+from misc.OutdoorSensors import OutdoorSensors
 from misc.LoggingData import LoggingData
 
 # Import actuator class
@@ -27,6 +28,8 @@ bme280_addresses = [0x76, 0x77]
 mhz19_address = '/dev/ttyAMA0'
 bh1750_addresses = [0x23, 0x5c] 
 ds18b20_address = "GPIO4-One-Wire"
+outdoor_sensor_adress = '/dev/ttyUSB0'
+outdoor_sensor_adress_baudrate =9600
 
 # List of GPIOs
 LEDStrip_GPIO = 13
@@ -49,6 +52,7 @@ bme280_sensors = SensorBme280(bus)
 mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
 # ds18b20_sensor = SensorDs18b20()
+outdoor_sensors = OutdoorSensors(outdoor_sensor_adress, outdoor_sensor_adress_baudrate)
 logging_data = LoggingData()
 
 # Create an instance of the actuator classes
@@ -84,7 +88,7 @@ try:
         # Delay per 1 second
         time.sleep(1)
         
-        if iteration == 10:    
+        if iteration == 1:    
             # Control again the actuator
             FANFront_actuator.actuate_FAN(27.0, 29.0, 50)
             FANBack_actuator.actuate_FAN(27.0, 29.0, 50)
@@ -100,26 +104,33 @@ try:
             co2, temperature_co2 = mhz19_sensor.read_sensor_data()
             averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(3, co2, temperature_co2)
             
-            # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-            logging_data.send_to_influxdb("greenhouse_measurements", None, None, None, None, None, averaged_co2, averaged_temperature_co2, None)
-                  
-            # bme280 sensors
+            if averaged_co2 is not None and averaged_temperature_co2 is not None:
+                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None)
+                    
+            # bh1750 sensors
             for address in bh1750_addresses:
                 light = bh1750_sensors.read_sensor_data(address)
-                averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
-                
-                # Actuating
-                # actuate_LED(self, current_value, set_point, duty_cycle)
-                LEDStrip_actuator.actuate_LED(averaged_light, light_set_point, 100)
+                if light is not None:
+                    averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
+                    
+                    if averaged_light is not None:
+                        # Actuating
+                        # actuate_LED(self, current_value, set_point, duty_cycle)
+                        LEDStrip_actuator.actuate_LED(averaged_light, light_set_point, 100)
+                        
+                        # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                        logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)
 
-                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)
-    
+            # bme280 sensors
             for address in bme280_addresses:
                 temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
-                averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
-                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None)
+                if all(v is not None for v in [temperature, humidity, pressure]):
+                    averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
+                    
+                    if all(v is not None for v in [averaged_temperature, averaged_humidity, averaged_pressure]):
+                        # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                        logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None)
 
             # ds18b20 sensor with 1-Wire
             # tank_temperature = ds18b20_sensor.read_sensor_data()
@@ -127,11 +138,17 @@ try:
             # Send data to InfluxDB
             # logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, None, None, None, averaged_tank_temperature)
 
-            
+            # outdoor sensor with serial connection
+            lux, temp, hum, co2, tvco2 = outdoor_sensors.read_sensor_data()
+            av_lux, av_temp, av_hum, av_co2, av_tvco2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, co2, tvco2)
+            if any(val is not None for val in [av_lux, av_temp, av_hum, av_co2, av_tvco2]):
+                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, None, None)
+
             iteration = 0
             
 except KeyboardInterrupt:
     print('Program stopped')
-
+ 
 except Exception as e:
     print('An unexpected error occurred:', str(e))

@@ -18,7 +18,7 @@ from misc.LoggingData import LoggingData
 # Import actuator class
 from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
-from misc.ActuatorSERVO import ActuatorSERVO
+from misc.ActuatorGPIO import ActuatorGPIO
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -35,10 +35,8 @@ outdoor_sensor_adress_baudrate =9600
 LEDStrip_GPIO = 13
 LEDBlink_GPIO = 12
 
-FANFront_GPIO = 16
-FANBack_GPIO = 26
-
-SERVO_GPIO = 6
+FAN_GPIO = 26
+SERVO_GPIO = 16
 
 # PWM Frequency
 PWM_frequency = 50
@@ -59,10 +57,9 @@ logging_data = LoggingData()
 LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
-FANFront_actuator = ActuatorFAN(FANFront_GPIO, PWM_frequency)
-FANBack_actuator = ActuatorFAN(FANBack_GPIO, PWM_frequency)
+FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
 
-SERVO_actuator = ActuatorSERVO(SERVO_GPIO, PWM_frequency)
+HUMIDIFIER_actuator = ActuatorGPIO(SERVO_GPIO)
 
 # Main loop 
 try:
@@ -75,11 +72,10 @@ try:
     while True:
         # Control for FAN 
         # def actuate_FAN(self, current_value, set_point)
-        FANFront_actuator.actuate_FAN(27.0, 25.0, 50)
-        FANBack_actuator.actuate_FAN(27.0, 25.0, 50)
-            
-        # Testing SERVO with this method
-        SERVO_actuator.actuate_SERVO(700.0, 500.0, 12)
+        FAN_actuator.actuate_FAN(27.0, 25.0, 0)
+
+        # Testing HUMIDIFIER with this method
+        HUMIDIFIER_actuator.actuate_GPIO_LOW()
     
         iteration += 1
         print("Iteration : ", iteration)
@@ -88,16 +84,11 @@ try:
         # Delay per 1 second
         time.sleep(1)
         
-        if iteration == 1:    
+        if iteration == 10:    
             # Control again the actuator
-            FANFront_actuator.actuate_FAN(27.0, 29.0, 50)
-            FANBack_actuator.actuate_FAN(27.0, 29.0, 50)
-            
-            # Close the window with the servo
-            SERVO_actuator.close_window(2)
+            # FAN_actuator.actuate_FAN(27.0, 29.0, 50)
             
             # Stop LED Blink
-            # LEDBlink_actuator.stop_blink_LED()
             LEDBlink_actuator.blink_LED(100)
                     
             # mh_z19b sensors

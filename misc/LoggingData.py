@@ -8,7 +8,8 @@ import pytz  # Import the pytz module for timezone manipulation
 from influxdb import InfluxDBClient
 
 # Set up InfluxDB
-host = '192.168.1.131'  # Change this as necessary
+# host = '192.168.1.131'  # Change this as necessary
+host = 'localhost'
 port = 8086
 username = ''  # Change this as necessary
 password = ''  # Change this as necessary

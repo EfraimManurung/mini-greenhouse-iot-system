@@ -1,6 +1,8 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
 
 v1.0: Make a simple class for the LED actuator
 '''

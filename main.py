@@ -1,7 +1,10 @@
-# greenhouse-iot-system
-# Author: Efraim Manurung
-# MSc Thesis in Information Technology Group, Wageningen University
-# April, 2024
+'''
+greenhouse-iot-system
+Author: Efraim Manurung
+MSc Thesis in Information Technology Group, Wageningen University
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
+'''
 
 # Import libraries that needed for the project
 import time
@@ -58,7 +61,6 @@ LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
-
 HUMIDIFIER_actuator = ActuatorGPIO(SERVO_GPIO)
 
 # Main loop 
@@ -84,7 +86,7 @@ try:
         # Delay per 1 second
         time.sleep(1)
         
-        if iteration == 10:    
+        if iteration == 1:    
             # Control again the actuator
             # FAN_actuator.actuate_FAN(27.0, 29.0, 50)
             

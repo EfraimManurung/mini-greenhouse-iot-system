@@ -1,11 +1,12 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
 
 Project source https://pypi.org/project/mh-z19/
 
 v1.0: Encapsulate mh_z19 class from the project source
-
 '''
 import time
 import os
@@ -28,7 +29,7 @@ class SensorMhz19:
             temperature = sensor_data['temperature']
             
         except Exception as e:
-            print('MHZ19 ERROR: An unexpected mhz19c error occurred at address 0x{}:'.format(self.UART_address), str(e))
+            print('ERROR MHZ19: An unexpected mhz19c error occurred at address 0x{}:'.format(self.UART_address), str(e))
             co2 = None
             temperature = None
         

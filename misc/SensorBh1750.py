@@ -16,6 +16,9 @@ class SensorBh1750:
             result = (data[1] + (256 * data[0])) / 1.2
             light = format(result, '.0f') 
             
+            # For debugging
+            print("Light Intensity (Lux): ", light)
+            
         except Exception as e:
             print('ERROR BH1750: An unexpected bh1750 error occurred at address 0x{:02X}:'.format(address), str(e))
             light = None

@@ -28,6 +28,10 @@ class SensorMhz19:
             co2 = sensor_data['co2']
             temperature = sensor_data['temperature']
             
+            # Print to debug 
+            print("co2: ", co2)
+            print("temperature: ", temperature)
+            
         except Exception as e:
             print('ERROR MHZ19: An unexpected mhz19c error occurred at address 0x{}:'.format(self.UART_address), str(e))
             co2 = None
@@ -39,26 +43,17 @@ class SensorMhz19:
         count = _count
         co2_value_total = 0
         temp_value_total = 0
-        valid_samples = 0  # Counter for valid samples
-
+        
         for x in range(count):
-            if co2_value is not None:
-                co2_value_total += co2_value
-                valid_samples += 1
-            if temp_value is not None:
-                temp_value_total += temp_value
-                valid_samples += 1
+            co2_value_total += co2_value
+            temp_value_total += temp_value
             time.sleep(1)
 
-        _averaged_co2 = co2_value_total / valid_samples if valid_samples != 0 else None
-        _averaged_temp = temp_value_total / valid_samples if valid_samples != 0 else None
+        _averaged_co2 = co2_value_total / count
+        _averaged_temp = temp_value_total / count
 
-        if _averaged_co2 is not None and _averaged_temp is not None:
-            print("Averaged VALUES from CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(
-                self.UART_address, _averaged_co2, _averaged_temp))
-        else:
-            print("No valid data to average from CO2 sensor at address {}".format(self.UART_address))
-
+        print("Averaged VALUES from CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
+            
         return _averaged_co2, _averaged_temp
 
     def write_sensor_data(self, _averaged_co2, _averaged_temp):

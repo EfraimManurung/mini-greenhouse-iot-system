@@ -2,6 +2,7 @@
 greenhouse-iot-system
 Author: Efraim Manurung
 MSc Thesis in Information Technology Group, Wageningen University
+
 efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
 '''
@@ -69,15 +70,15 @@ try:
     
     # Prompt the user for the set point value
     # light_set_point = float(input("Enter the set point value: "))
-    light_set_point = 250.0
+    light_set_point = 1000.0
     
     while True:
         # Control for FAN 
         # def actuate_FAN(self, current_value, set_point)
-        FAN_actuator.actuate_FAN(27.0, 25.0, 0)
+        # FAN_actuator.actuate_FAN(27.0, 25.0, 0)
 
         # Testing HUMIDIFIER with this method
-        HUMIDIFIER_actuator.actuate_GPIO_LOW()
+        # HUMIDIFIER_actuator.actuate_GPIO_LOW()
     
         iteration += 1
         print("Iteration : ", iteration)
@@ -86,12 +87,13 @@ try:
         # Delay per 1 second
         time.sleep(1)
         
-        if iteration == 1:    
+        if iteration == 10:    
             # Control again the actuator
             # FAN_actuator.actuate_FAN(27.0, 29.0, 50)
             
             # Stop LED Blink
             LEDBlink_actuator.blink_LED(100)
+            # LEDStrip_actuator.actuate_LED(10.0, light_set_point, 100)
                     
             # mh_z19b sensors
             co2, temperature_co2 = mhz19_sensor.read_sensor_data()
@@ -110,7 +112,7 @@ try:
                     if averaged_light is not None:
                         # Actuating
                         # actuate_LED(self, current_value, set_point, duty_cycle)
-                        LEDStrip_actuator.actuate_LED(averaged_light, light_set_point, 100)
+                        # LEDStrip_actuator.actuate_LED(averaged_light, light_set_point, 100)
                         
                         # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                         logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)
@@ -120,6 +122,18 @@ try:
                 temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
                 if all(v is not None for v in [temperature, humidity, pressure]):
                     averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
+                    
+                    # Control humidity with HUMIDIFIER
+                    # if averaged_humidity < 71.0:
+                    #     HUMIDIFIER_actuator.actuate_GPIO_HIGH()
+                    # else:
+                    #     HUMIDIFIER_actuator.actuate_GPIO_LOW()
+                    
+                    # # Control humidity with FAN
+                    # if averaged_humidity > 70.0:
+                    #     FAN_actuator.actuate_FAN_HIGH(100)
+                    # else:
+                    #     FAN_actuator.actuate_FAN_HIGH(0)
                     
                     if all(v is not None for v in [averaged_temperature, averaged_humidity, averaged_pressure]):
                         # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
@@ -141,7 +155,8 @@ try:
             iteration = 0
             
 except KeyboardInterrupt:
+    HUMIDIFIER_actuator.GPIO_cleanup()
     print('Program stopped')
- 
+    
 except Exception as e:
     print('An unexpected error occurred:', str(e))

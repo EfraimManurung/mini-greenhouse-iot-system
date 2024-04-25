@@ -23,6 +23,13 @@ class ActuatorFAN:
         
         # Start the PWM pin with 0% duty cycle
         self._PWM.start(0)
+    
+    def actuate_FAN_HIGH(self, duty_cycle):
+        self._PWM.ChangeDutyCycle(duty_cycle)
+        
+    def actuate_FAN_LOW(self, duty_cycle):
+        self._PWM.ChangeDutyCycle(duty_cycle)
+    
         
     def actuate_FAN(self, current_value, set_point, duty_cycle):
         print("CURRENT VALUE  HUM(%) OR TEMP(°C): {:.2f}".format(current_value))

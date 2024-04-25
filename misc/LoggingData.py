@@ -1,6 +1,14 @@
-# code sources: 
-# https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-the-raspberry-pi-4/
-# https://sandyjmacdonald.github.io/2021/12/29/logging-raspberry-pi-environmental-data-to-influxdb/
+'''
+Author: Efraim Manurung
+Information Technology Group, Wageningen University
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
+
+Project source:
+https://sandyjmacdonald.github.io/2021/12/29/setting-up-influxdb-and-grafana-on-the-raspberry-pi-4/
+https://sandyjmacdonald.github.io/2021/12/29/logging-raspberry-pi-environmental-data-to-influxdb/
+
+'''
 
 # import libraries
 import datetime

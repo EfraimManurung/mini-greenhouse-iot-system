@@ -4,9 +4,8 @@ Information Technology Group, Wageningen University
 efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
 
-Project source https://pypi.org/project/mh-z19/
+Project source: https://pypi.org/project/mh-z19/
 
-v1.0: Encapsulate mh_z19 class from the project source
 '''
 import time
 import os

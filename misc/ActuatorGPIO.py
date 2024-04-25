@@ -1,9 +1,8 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
-
-10 April 2024
-v1.0: Make a simple class for the SERVO actuator
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
 '''
 
 import RPi.GPIO as GPIO

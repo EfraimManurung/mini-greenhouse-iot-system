@@ -1,4 +1,11 @@
-# Source: https://github.com/AnaviTechnology/anavi-examples/blob/master/sensors/BH1750/python/bh1750.py
+'''
+Author: Efraim Manurung
+Information Technology Group, Wageningen University
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
+
+Project source: https://github.com/AnaviTechnology/anavi-examples/blob/master/sensors/BH1750/python/bh1750.py
+'''
 # import relevant libraries
 import time
 import os

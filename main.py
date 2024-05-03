@@ -76,8 +76,10 @@ try:
         # def actuate_FAN(self, current_value, set_point)
         # FAN_actuator.actuate_FAN(27.0, 25.0, 0)
 
-        # Testing HUMIDIFIER with this method
-        # HUMIDIFIER_actuator.actuate_GPIO_LOW()
+        # Testing ALL THE ACTUATORS with this METHODS
+        HUMIDIFIER_actuator.actuate_GPIO_HIGH()
+        FAN_actuator.actuate_FAN(27.0, 25.0, 100)
+        LEDStrip_actuator.actuate_LED(10.0, light_set_point, 100)
     
         iteration += 1
         print("Iteration : ", iteration)
@@ -100,7 +102,7 @@ try:
             
             if averaged_co2 is not None and averaged_temperature_co2 is not None:
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None)
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
                     
             # bh1750 sensors
             for address in bh1750_addresses:
@@ -110,7 +112,7 @@ try:
                     
                     if averaged_light is not None:                        
                         # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                        logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None)
+                        logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
 
             # bme280 sensors
             for address in bme280_addresses:
@@ -132,14 +134,18 @@ try:
                     
                     if all(v is not None for v in [averaged_temperature, averaged_humidity, averaged_pressure]):
                         # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                        logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None)
+                        logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
 
             # outdoor sensor with serial connection
-            lux, temp, hum, co2, tvco2 = outdoor_sensors.read_sensor_data()
-            av_lux, av_temp, av_hum, av_co2, av_tvco2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, co2, tvco2)
-            if any(val is not None for val in [av_lux, av_temp, av_hum, av_co2, av_tvco2]):
+            lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
+            av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
+            if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, None, None)
+                # Logs the data to your InfluxDB
+                # def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
+                #                      humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None):
+                
+                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
             iteration = 0
             

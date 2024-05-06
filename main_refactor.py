@@ -72,7 +72,7 @@ temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 30                                # s
+time_period = 20                                # s
 
 # Main loop 
 try:
@@ -99,7 +99,7 @@ try:
         if co2 is not None and temperature_co2 is None:
             averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(3, co2, temperature_co2)
         
-            if iteration % time_period:
+            if iteration % time_period == 0:
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                     logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
                         
@@ -131,7 +131,7 @@ try:
                 # else:
                 #     FAN_actuator.actuate_FAN_HIGH(0)
                 
-                if iteration % time_period: 
+                if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                     logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
 
@@ -144,7 +144,7 @@ try:
             # def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
             #                      humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None):
             
-            if iteration % time_period:
+            if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
 except KeyboardInterrupt:

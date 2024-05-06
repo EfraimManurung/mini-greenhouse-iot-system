@@ -92,7 +92,7 @@ class OutdoorSensors:
             averaged_co2 = co2_total / _count
             averaged_temp_co2 = temp_co2_total / _count
 
-            print("Averaged VALUES: lux={}, temp={}, hum={}, CCS_CO2={}, CCS_TVCO2={}, CO2={}, TEMP_COw={}".format(
+            print("Averaged VALUES from Outdoor lux={}, temp={}, hum={}, CCS_CO2={}, CCS_TVCO2={}, CO2={}, TEMP_COw={}".format(
                 averaged_lux, averaged_temp, averaged_hum, averaged_ccs_co2, averaged_ccs_tvco2, averaged_co2, averaged_temp_co2))
 
             return averaged_lux, averaged_temp, averaged_hum, averaged_ccs_co2, averaged_ccs_tvco2, averaged_co2, averaged_temp_co2

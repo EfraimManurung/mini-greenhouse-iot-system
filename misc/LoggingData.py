@@ -60,7 +60,34 @@ class LoggingData:
         ]
         
         # Print the payload
-        print("Payload:", payload)
+        print("Payload for greenhouse measurements:", payload)
         
         # Write data to InfluxDB
         client.write_points(payload)
+    
+    # Logs control measurements/data
+    def send_to_influxdb_control(self, measurement = None, actuator = None, value = None):
+        print("Send to influxDB control!")
+        
+         # Get the current UTC timestamp
+        timestamp = datetime.datetime.now(datetime.timezone.utc)
+        
+        # Create the payload
+        payload = [
+            {"measurement": measurement,
+                "tags": {
+                    "location": actuator,
+                },
+                "time": timestamp,
+                "fields": {
+                    "value" : value
+                }
+            }
+        ]
+        
+        # Print the payload
+        print("Payload for control measurements:", payload)
+        
+        # Write data to InfluxDB
+        client.write_points(payload)
+        

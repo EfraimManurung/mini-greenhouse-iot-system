@@ -60,7 +60,7 @@ class SensorBme280:
             temperature_total += temperature
             humidity_total += humidity
             pressure_total += pressure
-            time.sleep(1)
+            time.sleep(0.2)
         
         _averaged_temperature = temperature_total / count
         _averaged_humidity = humidity_total / count

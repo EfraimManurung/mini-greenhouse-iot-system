@@ -28,8 +28,8 @@ class SensorMhz19:
             temperature = sensor_data['temperature']
             
             # Print to debug 
-            print("co2: ", co2)
-            print("temperature: ", temperature)
+            # print("co2: ", co2)
+            # print("temperature: ", temperature)
             
         except Exception as e:
             print('ERROR MHZ19: An unexpected mhz19c error occurred at address 0x{}:'.format(self.UART_address), str(e))
@@ -46,12 +46,12 @@ class SensorMhz19:
         for x in range(count):
             co2_value_total += co2_value
             temp_value_total += temp_value
-            time.sleep(1)
+            time.sleep(0.2)
 
         _averaged_co2 = co2_value_total / count
         _averaged_temp = temp_value_total / count
 
-        print("Averaged VALUES from CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
+        print("Averaged VALUES from Inside CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
             
         return _averaged_co2, _averaged_temp
 

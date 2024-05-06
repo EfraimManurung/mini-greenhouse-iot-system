@@ -72,7 +72,7 @@ temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 20                                # s
+time_period = 30                                # s
 
 # Main loop 
 try:
@@ -96,13 +96,13 @@ try:
                 
         # mh_z19b sensors
         co2, temperature_co2 = mhz19_sensor.read_sensor_data()
-        if co2 is not None and temperature_co2 is None:
+        if co2 is not None and temperature_co2 is not None:
             averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(3, co2, temperature_co2)
         
             if iteration % time_period == 0:
-                    # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                    logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
-                        
+                # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
+                    
         # bh1750 sensors
         for address in bh1750_addresses:
             light = bh1750_sensors.read_sensor_data(address)

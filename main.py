@@ -1,5 +1,5 @@
 '''
-greenhouse-iot-system
+mini-greenhouse-iot-system
 Author: Efraim Manurung
 MSc Thesis in Information Technology Group, Wageningen University
 
@@ -20,7 +20,7 @@ from misc.SensorMhz19 import SensorMhz19
 from misc.OutdoorSensors import OutdoorSensors
 from misc.LoggingData import LoggingData
 
-# Import actuator class
+# Import actuator classes
 from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
 from misc.ActuatorGPIO import ActuatorGPIO

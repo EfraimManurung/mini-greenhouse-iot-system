@@ -66,7 +66,7 @@ class LoggingData:
         client.write_points(payload)
     
     # Logs control measurements/data
-    def send_to_influxdb_control(self, measurement = None, actuator = None, value = None):
+    def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
         print("Send to influxDB control!")
         
          # Get the current UTC timestamp

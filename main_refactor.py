@@ -11,6 +11,7 @@ Main program
 
 # Import libraries that needed for the project
 import time
+from datetime import datetime
 import smbus2
 
 # Import sensor classes
@@ -33,7 +34,7 @@ bme280_addresses = [0x76, 0x77]
 mhz19_address = '/dev/ttyAMA0'
 bh1750_addresses = [0x23, 0x5c] 
 outdoor_sensor_adress = '/dev/ttyUSB0'
-outdoor_sensor_adress_baudrate =9600
+outdoor_sensor_adress_baudrate = 9600
 
 # List of GPIOs
 LEDStrip_GPIO = 13
@@ -41,6 +42,7 @@ LEDBlink_GPIO = 12
 
 FAN_GPIO = 26
 HUMIDIFIER_GPIO = 16
+HEATER_GPIO = 12
 
 # PWM Frequency
 PWM_frequency = 50
@@ -62,11 +64,12 @@ LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
 HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
+HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
 co2_set_point = 1000.0                          # [ppm]                 There is no control for co2 
-global_solar_radiation = 50632.0                # [lux]                 400 / 0.0079 = 50632.0, for the sun there is an approximate conversion of 0.0079W/m2 per Lux. 
+global_solar_radiation_threshold = 50632.0      # [lux]                 400 / 0.0079 = 50632.0, for the sun there is an approximate conversion of 0.0079W/m2 per Lux. 
 humidity_set_point = 87.0                       # [%]
 temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
@@ -74,6 +77,74 @@ temperature_set_point_at_day = 19.5             # [°C]
 # Send data every seconds
 time_period = 30                                # s
 
+# Define the function to check time and control the LED
+def control_LED_strip(global_solar_radiation, iteration):
+    now = datetime.now()
+    current_time = now.time()
+    
+    # Check if current time is between 00:00 and 18:00
+    if current_time >= datetime.strptime("00:00", "%H:%M").time() and \
+       current_time <= datetime.strptime("18:00", "%H:%M").time():
+           # Check if the global solar radiation is below the threshold
+            if global_solar_radiation < global_solar_radiation_threshold:
+                LEDStrip_actuator.LED_ON(100)   # Turn LED on
+                if iteration % time_period == 0:
+                    # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+                    logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 1)
+            else:
+                LEDStrip_actuator.LED_ON(0)     # Turn LED off
+                if iteration % time_period == 0:
+                    # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+                    logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 0)
+    else:
+        LEDStrip_actuator.LED_ON(0)             # Turn LED off
+        if iteration % time_period == 0:
+                    # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+                    logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 0)
+
+# Check daytime
+def is_daytime():
+    # Assuming day time is between 06:00 and 18:00
+    now = datetime.now()
+    current_time = now.time()
+    return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
+           current_time <= datetime.strptime("18:00", "%H:%M").time()
+
+# Define the function to control the LED
+def control_fan(temperature, humidity, iteration):
+    if is_daytime():
+        temperature_setpoint = temperature_set_point_at_day
+    else:
+        temperature_setpoint = temperature_set_point_at_night
+            
+    # Ventilation due to excess heat
+    if temperature > temperature_setpoint + 5:
+        FAN_actuator.actuate_FAN(100)
+        if iteration % time_period == 0:
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 1)
+    
+    # Ventilation due to excess humidity
+    elif humidity > humidity_set_point:
+        FAN_actuator.actuate_FAN(100)
+        if iteration % time_period == 0:
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 1)
+
+    # Close ventilation if indoor temperature is 1 degree below heating setpoint
+    elif temperature < temperature_setpoint - 1:
+        FAN_actuator.actuate_FAN(0)
+        if iteration % time_period == 0:
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 0)
+    
+    else:
+        # No need for ventilation
+        FAN_actuator.actuate_FAN(0)
+        if iteration % time_period == 0:
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 0)
+    
 # Main loop 
 try:
     iteration = 0
@@ -81,18 +152,20 @@ try:
     while True:
         # Testing ALL THE ACTUATORS with this METHODS
         # HUMIDIFIER_actuator.actuate_GPIO_HIGH()
-        # FAN_actuator.actuate_FAN(27.0, 25.0, 100)
+        # FAN_actuator.actuate_FAN(100)
         # LEDStrip_actuator.actuate_LED(10.0, light_set_point, 100)
     
         iteration += 1
         print("Iteration : ", iteration)
-        LEDBlink_actuator.blink_LED(DT_blink)
+        LEDBlink_actuator.LED_ON(DT_blink)
         
         # Delay per 1 second
         time.sleep(1)
         
         # Stop LED Blink make it turn on without blinking
-        LEDBlink_actuator.blink_LED(100)
+        LEDBlink_actuator.LED_ON(100)
+        
+        # Start 
                 
         # mh_z19b sensors
         co2, temperature_co2 = mhz19_sensor.read_sensor_data()
@@ -119,17 +192,8 @@ try:
             if all(v is not None for v in [temperature, humidity, pressure]):
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
-                # Control humidity with HUMIDIFIER
-                # if averaged_humidity < 71.0:
-                #     HUMIDIFIER_actuator.actuate_GPIO_HIGH()
-                # else:
-                #     HUMIDIFIER_actuator.actuate_GPIO_LOW()
-                
-                # # Control humidity with FAN
-                # if averaged_humidity > 70.0:
-                #     FAN_actuator.actuate_FAN_HIGH(100)
-                # else:
-                #     FAN_actuator.actuate_FAN_HIGH(0)
+                # Call the def control_fan(temperature, humidity, iteration):
+                control_fan(averaged_temperature, averaged_humidity, iteration)
                 
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
@@ -139,11 +203,14 @@ try:
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
         av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
+
+            # Call the control function control_LED_strip(global_solar_radiation):
+            control_LED_strip(av_lux, iteration)
+            
             # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
             # Logs the data to your InfluxDB
             # def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
             #                      humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None):
-            
             if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 

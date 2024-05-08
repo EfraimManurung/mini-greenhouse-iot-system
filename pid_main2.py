@@ -4,7 +4,6 @@ import smbus2
 from simple_pid import PID
 
 from misc.ActuatorGPIO import ActuatorGPIO
-from misc.ActuatorHEATER import ActuatorHEATER
 from misc.OutdoorSensors import OutdoorSensors
 
 outdoor_sensor_adress = '/dev/ttyUSB0'
@@ -16,7 +15,6 @@ outdoor_sensors = OutdoorSensors(outdoor_sensor_adress, outdoor_sensor_adress_ba
 
 HEATER_GPIO = 6
 
-# HEATER_actuator = ActuatorHEATER(HEATER_GPIO, 50)
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 
 # pid = PID(5, 0.01, 0.1, setpoint=humidity_setpoint)

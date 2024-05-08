@@ -22,7 +22,7 @@ class ActuatorGPIO:
         GPIO.output(self.choosen_pin, GPIO.LOW)
     
     def actuate_GPIO_LOW(self):
-         GPIO.output(self.choosen_pin, GPIO.HIGH)
+        GPIO.output(self.choosen_pin, GPIO.HIGH)
     
     def GPIO_cleanup(self):
         GPIO.cleanup()

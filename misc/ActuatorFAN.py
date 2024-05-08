@@ -27,6 +27,9 @@ class ActuatorFAN:
     def actuate_FAN(self, duty_cycle):
         self._PWM.ChangeDutyCycle(duty_cycle)
     
+    def GPIO_cleanup(self):
+        GPIO.cleanup()
+    
     # def actuate_FAN_HIGH(self, duty_cycle):
     #     self._PWM.ChangeDutyCycle(duty_cycle)
         

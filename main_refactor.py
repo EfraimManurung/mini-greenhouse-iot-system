@@ -42,7 +42,7 @@ LEDBlink_GPIO = 12
 
 FAN_GPIO = 26
 HUMIDIFIER_GPIO = 16
-HEATER_GPIO = 12
+HEATER_GPIO = 6
 
 # PWM Frequency
 PWM_frequency = 50
@@ -148,6 +148,9 @@ def control_fan(temperature, humidity, iteration):
 # Main loop 
 try:
     iteration = 0
+    
+    # Testing
+    # FAN_actuator.actuate_FAN(100)
     
     while True:
         # Testing ALL THE ACTUATORS with this METHODS

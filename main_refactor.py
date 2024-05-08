@@ -26,6 +26,9 @@ from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
 from misc.ActuatorGPIO import ActuatorGPIO
 
+# Import PID library
+from simple_pid import PID
+
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
 
@@ -77,6 +80,46 @@ temperature_set_point_at_day = 19.5             # [°C]
 # Send data every seconds
 time_period = 30                                # s
 
+# Initialize PID, define PID parameters
+Kp = 2
+Ki = 5
+Kd = 1
+output_limits = 5000
+
+# Initialized class object of PID and set it default values
+pid_heater = PID(Kp, Ki, Kd, setpoint = 0.0)
+pid_heater.output_limits  = (0, output_limits)
+
+# Check daytime
+def is_daytime():
+    # Assuming day time is between 06:00 and 18:00
+    now = datetime.now()
+    current_time = now.time()
+    return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
+           current_time <= datetime.strptime("18:00", "%H:%M").time()
+
+# Define the function to control heater
+def control_heater(_temperature, iteration):
+    if is_daytime():
+        temperature_setpoint = temperature_set_point_at_day
+    else:
+        temperature_setpoint = temperature_set_point_at_night
+
+    pid_heater.setpoint = temperature_setpoint
+    output = pid_heater(_temperature)
+    
+    print("temperature: {}, output: {}, count: {}".format(_temperature, output, iteration))
+    
+    # Turn on the heater for the duration specified by the PID output
+    if output > 0:
+            HEATER_actuator.actuate_GPIO_HIGH()  # Turn heater on
+            time.sleep(output / 1000)            # Keep heater on for output milliseconds
+            HEATER_actuator.actuate_GPIO_LOW()   # Turn heater off
+            
+    # if iteration % time_period == 0:
+    #             # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+    #             logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 1)
+        
 # Define the function to check time and control the LED
 def control_LED_strip(global_solar_radiation, iteration):
     now = datetime.now()
@@ -101,14 +144,6 @@ def control_LED_strip(global_solar_radiation, iteration):
         if iteration % time_period == 0:
                     # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
                     logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 0)
-
-# Check daytime
-def is_daytime():
-    # Assuming day time is between 06:00 and 18:00
-    now = datetime.now()
-    current_time = now.time()
-    return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
-           current_time <= datetime.strptime("18:00", "%H:%M").time()
 
 # Define the function to control the LED
 def control_fan(temperature, humidity, iteration):
@@ -167,8 +202,6 @@ try:
         
         # Stop LED Blink make it turn on without blinking
         LEDBlink_actuator.LED_ON(100)
-        
-        # Start 
                 
         # mh_z19b sensors
         co2, temperature_co2 = mhz19_sensor.read_sensor_data()
@@ -195,7 +228,10 @@ try:
             if all(v is not None for v in [temperature, humidity, pressure]):
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
-                # Call the def control_fan(temperature, humidity, iteration):
+                # Call the def control_heater(_temperature, iteration)
+                control_heater(averaged_temperature, iteration)
+                
+                # Call the def control_fan(temperature, humidity, iteration)
                 control_fan(averaged_temperature, averaged_humidity, iteration)
                 
                 if iteration % time_period == 0: 

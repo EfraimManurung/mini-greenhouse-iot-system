@@ -40,7 +40,7 @@ outdoor_sensor_adress = '/dev/ttyUSB0'
 outdoor_sensor_adress_baudrate = 9600
 
 # List of GPIOs
-LEDStrip_GPIO = 13
+LEDStrip_GPIO = 17
 LEDBlink_GPIO = 12
 
 FAN_GPIO = 26
@@ -76,7 +76,7 @@ FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 co2_set_point = 1000.0                          # [ppm]                 There is no control for co2 
 global_solar_radiation_threshold = 50632.0      # [lux]                 400 / 0.0079 = 50632.0, for the sun there is an approximate conversion of 0.0079W/m2 per Lux. 
 humidity_set_point = 87.0                       # [%]
-temperature_set_point_at_night = 25.5           # [°C]
+temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
@@ -98,10 +98,10 @@ def is_daytime():
     now = datetime.now()
     current_time = now.time()
     return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
-           current_time <= datetime.strptime("18:00", "%H:%M").time()
+           current_time <= datetime.strptime("21:06", "%H:%M").time()
 
 # Define the function to control heater
-def control_heater(_temperature, iteration):
+def pid_control_heater(_temperature, iteration):
     if is_daytime():
         temperature_setpoint = temperature_set_point_at_day
     else:
@@ -124,14 +124,30 @@ def control_heater(_temperature, iteration):
     #             # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
     #             logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 1)
         
+# Define the function to control heater
+def control_heater(_temperature, iteration):
+    if is_daytime():
+        temperature_setpoint = temperature_set_point_at_day
+    else:
+        temperature_setpoint = temperature_set_point_at_night
+    
+    print("temperature setpoint: {}, temperature: {}, count: {}".format(temperature_setpoint, _temperature, iteration))
+    
+    # Turn on the heater for the duration specified by the PID output
+    if _temperature < temperature_setpoint:
+        HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
+        FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
+        print("HEATER ON!")
+    else:
+        HEATER_actuator.actuate_GPIO_LOW()      # Turn heater off
+        FAN_HEATER_actuator.actuate_GPIO_LOW()  # Turn FAN heater off
+        print("HEATER OFF!")
+
 # Define the function to check time and control the LED
 def control_LED_strip(global_solar_radiation, iteration):
-    now = datetime.now()
-    current_time = now.time()
     
     # Check if current time is between 00:00 and 18:00
-    if current_time >= datetime.strptime("00:00", "%H:%M").time() and \
-       current_time <= datetime.strptime("18:00", "%H:%M").time():
+    if is_daytime():
            # Check if the global solar radiation is below the threshold
             if global_solar_radiation < global_solar_radiation_threshold:
                 LEDStrip_actuator.LED_ON(100)   # Turn LED on
@@ -190,6 +206,7 @@ try:
     
     # Testing
     # FAN_actuator.actuate_FAN(100)
+    LEDStrip_actuator.LED_ON(100)
     
     while True:
         # Testing ALL THE ACTUATORS with this METHODS
@@ -233,6 +250,7 @@ try:
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
                 # Call the def control_heater(_temperature, iteration)
+                # pid_control_heater(averaged_temperature, iteration)
                 control_heater(averaged_temperature, iteration)
                 
                 # Call the def control_fan(temperature, humidity, iteration)
@@ -258,7 +276,14 @@ try:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
 except KeyboardInterrupt:
+    # Clean up all the GPIOs
+    LEDStrip_actuator.GPIO_cleanup()
+    LEDBlink_actuator.GPIO_cleanup()
+    FAN_actuator.GPIO_cleanup()
     HUMIDIFIER_actuator.GPIO_cleanup()
+    HEATER_actuator.GPIO_cleanup()
+    FAN_HEATER_actuator.GPIO_cleanup()
+    
     print('Program stopped')
     
 except Exception as e:

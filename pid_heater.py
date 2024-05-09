@@ -38,8 +38,8 @@ bme280_sensors = SensorBme280(bus)
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
-temperature_set_point_at_night = 18.5           # [°C]
-temperature_set_point_at_day = 19.5             # [°C]
+temperature_set_point_at_night = 21.5 #18.5           # [°C]
+temperature_set_point_at_day = 21.5 #19.5             # [°C]
 
 # Initialize PID, define PID parameters
 Kp = 2

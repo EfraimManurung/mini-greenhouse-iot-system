@@ -45,8 +45,8 @@ LEDBlink_GPIO = 12
 
 FAN_GPIO = 26
 HUMIDIFIER_GPIO = 16
-HEATER_GPIO = 6
-FAN_HEATER_GPIO = 5
+# HEATER_GPIO = 6
+# FAN_HEATER_GPIO = 5
 
 # PWM Frequency
 PWM_frequency = 50
@@ -68,8 +68,8 @@ LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
 HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
-HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
-FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
+# HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
+# FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
@@ -221,8 +221,8 @@ except KeyboardInterrupt:
     LEDBlink_actuator.GPIO_cleanup()
     FAN_actuator.GPIO_cleanup()
     HUMIDIFIER_actuator.GPIO_cleanup()
-    HEATER_actuator.GPIO_cleanup()
-    FAN_HEATER_actuator.GPIO_cleanup()
+    # HEATER_actuator.GPIO_cleanup()
+    # FAN_HEATER_actuator.GPIO_cleanup()
     
     print('Program stopped')
     

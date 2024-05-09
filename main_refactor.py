@@ -98,7 +98,7 @@ def is_daytime():
     now = datetime.now()
     current_time = now.time()
     return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
-           current_time <= datetime.strptime("21:06", "%H:%M").time()
+           current_time <= datetime.strptime("18:00", "%H:%M").time()
 
 # Define the function to control heater
 def pid_control_heater(_temperature, iteration):

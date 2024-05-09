@@ -83,7 +83,7 @@ try:
     
         iteration += 1
         print("Iteration : ", iteration)
-        LEDBlink_actuator.blink_LED(DT_blink)
+        LEDBlink_actuator.LED_ON(DT_blink)
         
         # Delay per 1 second
         time.sleep(1)
@@ -93,7 +93,7 @@ try:
             # FAN_actuator.actuate_FAN(27.0, 29.0, 50)
             
             # Stop LED Blink
-            LEDBlink_actuator.blink_LED(100)
+            LEDBlink_actuator.LED_ON(100)
             # LEDStrip_actuator.actuate_LED(10.0, light_set_point, 100)
                     
             # mh_z19b sensors

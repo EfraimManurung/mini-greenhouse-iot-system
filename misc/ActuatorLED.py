@@ -47,8 +47,8 @@ class ActuatorLED:
         # Stop the PWM pin 
         self._PWM.stop()
     
-    # def clean_LED(self):
-    #     GPIO.cleanup
+    def GPIO_cleanup(self):
+        GPIO.cleanup()
         
         
         

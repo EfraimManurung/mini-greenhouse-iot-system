@@ -46,6 +46,7 @@ LEDBlink_GPIO = 12
 FAN_GPIO = 26
 HUMIDIFIER_GPIO = 16
 HEATER_GPIO = 6
+FAN_HEATER_GPIO = 5
 
 # PWM Frequency
 PWM_frequency = 50
@@ -68,17 +69,18 @@ LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
 HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
+FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
 co2_set_point = 1000.0                          # [ppm]                 There is no control for co2 
 global_solar_radiation_threshold = 50632.0      # [lux]                 400 / 0.0079 = 50632.0, for the sun there is an approximate conversion of 0.0079W/m2 per Lux. 
 humidity_set_point = 87.0                       # [%]
-temperature_set_point_at_night = 18.5           # [°C]
+temperature_set_point_at_night = 25.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 30                                # s
+time_period = 30                                 # s
 
 # Initialize PID, define PID parameters
 Kp = 2
@@ -112,9 +114,11 @@ def control_heater(_temperature, iteration):
     
     # Turn on the heater for the duration specified by the PID output
     if output > 0:
-            HEATER_actuator.actuate_GPIO_HIGH()  # Turn heater on
-            time.sleep(output / 1000)            # Keep heater on for output milliseconds
-            HEATER_actuator.actuate_GPIO_LOW()   # Turn heater off
+            HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
+            FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
+            time.sleep(output / 1000)               # Keep heater on for output milliseconds
+            HEATER_actuator.actuate_GPIO_LOW()      # Turn heater off
+            FAN_HEATER_actuator.actuate_GPIO_LOW()  # Turn FAN heater off
             
     # if iteration % time_period == 0:
     #             # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):

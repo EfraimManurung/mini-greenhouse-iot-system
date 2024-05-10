@@ -80,14 +80,16 @@ temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 30                                 # s
+time_period = 20                                 # s
 
 # Check daytime
 def is_daytime():
-    # Assuming day time is between 06:00 and 18:00
+    # Assuming day time is between 00:00 and 18:00
+    #     setParam(gl, 'lampsOn', 0);            % time of day (in morning) to switch on lamps 													[hours since midnight] 					0
+    #     setParam(gl, 'lampsOff', 18);          % time of day (in evening) to switch off lamps 
     now = datetime.now()
     current_time = now.time()
-    return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
+    return current_time >= datetime.strptime("00:00", "%H:%M").time() and \
            current_time <= datetime.strptime("18:00", "%H:%M").time()
 
 # Define the function to check time and control the LED

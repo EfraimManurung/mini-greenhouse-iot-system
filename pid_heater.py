@@ -38,8 +38,8 @@ bme280_sensors = SensorBme280(bus)
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
-temperature_set_point_at_night = 21.5 #18.5           # [°C]
-temperature_set_point_at_day = 21.5 #19.5             # [°C]
+temperature_set_point_at_night = 18.5           # [°C]
+temperature_set_point_at_day = 19.5             # [°C]
 
 # Initialize PID, define PID parameters
 Kp = 2
@@ -54,6 +54,8 @@ pid_heater.output_limits  = (0, output_limits)
 # Check daytime
 def is_daytime():
     # Assuming day time is between 06:00 and 18:00
+    # Heating was applied whenever the indoor temperature was below the target setpoint, 
+    # which was 19.5 ◦C during the light period and 18.5 ◦C during the dark period.
     now = datetime.now()
     current_time = now.time()
     return current_time >= datetime.strptime("06:00", "%H:%M").time() and \

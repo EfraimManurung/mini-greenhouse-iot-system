@@ -198,6 +198,9 @@ try:
             if all(v is not None for v in [temperature, humidity, pressure]):
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
+                # Call the control function control_fan(temperature, humidity, iteration)
+                control_fan(averaged_temperature, averaged_humidity, iteration)
+                
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                     logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)

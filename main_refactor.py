@@ -83,7 +83,7 @@ temperature_set_point_at_day = 19.5             # [°C]
 time_period = 20                                 # s
 
 # Check daytime
-def is_daytime():
+def is_daytime_led():
     # Assuming day time is between 00:00 and 18:00
     #     setParam(gl, 'lampsOn', 0);            % time of day (in morning) to switch on lamps 													[hours since midnight] 					0
     #     setParam(gl, 'lampsOff', 18);          % time of day (in evening) to switch off lamps 
@@ -92,11 +92,18 @@ def is_daytime():
     return current_time >= datetime.strptime("00:00", "%H:%M").time() and \
            current_time <= datetime.strptime("18:00", "%H:%M").time()
 
+def is_daytime():
+    # Assuming day time is between 06:00 and 18:00
+    now = datetime.now()
+    current_time = now.time()
+    return current_time >= datetime.strptime("06:00", "%H:%M").time() and \
+           current_time <= datetime.strptime("18:00", "%H:%M").time()
+    
 # Define the function to check time and control the LED
 def control_LED_strip(global_solar_radiation, iteration):
     
     # Check if current time is between 00:00 and 18:00
-    if is_daytime():
+    if is_daytime_led():
            # Check if the global solar radiation is below the threshold
             if global_solar_radiation < global_solar_radiation_threshold:
                 LEDStrip_actuator.LED_ON(100)   # Turn LED on
@@ -193,17 +200,30 @@ try:
                     logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
 
         # bme280 sensors
+        temp_sum = 0  # Variable to store the sum of averaged temperatures
+        count = 0     # Variable to store the count of addresses with valid temperature readings
+        
         for address in bme280_addresses:
             temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
             if all(v is not None for v in [temperature, humidity, pressure]):
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
-                # Call the control function control_fan(temperature, humidity, iteration)
-                control_fan(averaged_temperature, averaged_humidity, iteration)
+                # Add averaged temperature to the sum
+                temp_sum += averaged_temperature
+                count += 1
                 
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                     logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
+        
+        # Calculate the overall average temperature
+        if count > 0:
+            overall_average_temperature = temp_sum / count
+            
+            print(f"Overall average temperature: {overall_average_temperature}")
+
+            # Call the control function control_fan(temperature, humidity, iteration)
+            control_fan(overall_average_temperature, averaged_humidity, iteration)
 
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()

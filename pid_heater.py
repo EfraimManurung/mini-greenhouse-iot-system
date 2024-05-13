@@ -96,6 +96,28 @@ try:
                 
                 # Call the PID control heater function
                 pid_control_heater(averaged_temperature, iteration)
+                
+        # bme280 sensors
+        temp_sum = 0  # Variable to store the sum of averaged temperatures
+        count = 0     # Variable to store the count of addresses with valid temperature readings
+        
+        for address in bme280_addresses:
+            temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
+            if all(v is not None for v in [temperature, humidity, pressure]):
+                averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
+                
+                # Add averaged temperature to the sum
+                temp_sum += averaged_temperature
+                count += 1
+
+        # Calculate the overall average temperature
+        if count > 0:
+            overall_average_temperature = temp_sum / count
+            
+            print(f"Overall average temperature: {overall_average_temperature}")
+
+            # Call the PID control heater function
+            pid_control_heater(overall_average_temperature, iteration)
 
 except KeyboardInterrupt:
     # Clean up all the GPIOs

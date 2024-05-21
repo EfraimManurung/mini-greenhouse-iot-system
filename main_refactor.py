@@ -19,6 +19,8 @@ from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.SensorMhz19 import SensorMhz19
 from misc.OutdoorSensors import OutdoorSensors
+
+# Import for logging data
 from misc.LoggingData import LoggingData
 
 # Import actuator classes
@@ -55,14 +57,16 @@ PWM_frequency_for_blinking = 2
 # Duty cycle in percentage
 DT_blink = 50
 
-# Create an instance of the sensor classes
+# Create an instance of the sensors class
 bme280_sensors = SensorBme280(bus)
 mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
 outdoor_sensors = OutdoorSensors(outdoor_sensor_adress, outdoor_sensor_adress_baudrate)
+
+# Create an instance of the logging data class
 logging_data = LoggingData()
 
-# Create an instance of the actuator classes
+# Create an instance of the actuator class
 LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 

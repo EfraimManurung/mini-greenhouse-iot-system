@@ -51,7 +51,7 @@ class SensorMhz19:
         _averaged_co2 = co2_value_total / count
         _averaged_temp = temp_value_total / count
 
-        print("Averaged VALUES from Inside CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
+        print("AVERAGED VALUES from Inside CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
             
         return _averaged_co2, _averaged_temp
 

@@ -22,6 +22,9 @@ from misc.SensorBme280 import SensorBme280
 from misc.ActuatorGPIO import ActuatorGPIO
 from misc.OutdoorSensors import OutdoorSensors
 
+# Import logging logging data
+from misc.LoggingData import LoggingData
+
 # List of GPIOs
 HEATER_GPIO = 6
 FAN_HEATER_GPIO = 5
@@ -32,12 +35,17 @@ bus = smbus2.SMBus(1)
 # List of addresses
 bme280_addresses = [0x76, 0x77]
 
-# Create an instance of the sensor classes
+# Create an instance of the sensor class
 bme280_sensors = SensorBme280(bus)
 
+# Create an instance of the actuators class
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
+# Create an instance of the logging data class
+logging_data = LoggingData()
+
+# Initialized setpoints
 temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
@@ -77,9 +85,15 @@ def pid_control_heater(_temperature, iteration):
     if output > 0:
             HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
             FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
-            time.sleep(output)               # Keep heater on for output milliseconds
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 1)
+            
+            time.sleep(output)                      # Keep heater on for output seconds
             HEATER_actuator.actuate_GPIO_LOW()      # Turn heater off
             FAN_HEATER_actuator.actuate_GPIO_LOW()  # Turn FAN heater off
+            
+            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 0)
             
 # Main loop
 try:

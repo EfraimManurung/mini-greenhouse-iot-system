@@ -61,7 +61,7 @@ class SensorBh1750:
         _averaged_light = light_total / valid_samples if valid_samples != 0 else None
         
         if _averaged_light is not None:
-            print("Averaged VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
+            print("AVERAGED VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
         
         return _averaged_light 
 

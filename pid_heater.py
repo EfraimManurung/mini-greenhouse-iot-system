@@ -47,7 +47,7 @@ logging_data = LoggingData()
 
 # Initialized setpoints
 temperature_set_point_at_night = 18.5           # [°C]
-temperature_set_point_at_day = 19.5             # [°C]
+temperature_set_point_at_day = 25.5             # [°C]
 
 # Initialize PID, define PID parameters
 Kp = 2
@@ -117,12 +117,12 @@ try:
         
         for address in bme280_addresses:
             temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
-            if all(v is not None for v in [temperature, humidity, pressure]):
-                averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
+            # if all(v is not None for v in [temperature, humidity, pressure]):
+            #     averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
                 
-                # Add averaged temperature to the sum
-                temp_sum += averaged_temperature
-                count += 1
+            # Add averaged temperature to the sum
+            temp_sum +=  temperature #averaged_temperature
+            count += 1
 
         # Calculate the overall average temperature
         if count > 0:

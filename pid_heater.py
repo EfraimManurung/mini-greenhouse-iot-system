@@ -47,7 +47,7 @@ logging_data = LoggingData()
 
 # Initialized setpoints
 temperature_set_point_at_night = 18.5           # [°C]
-temperature_set_point_at_day = 25.5             # [°C]
+temperature_set_point_at_day = 19.5             # [°C]
 
 # Initialize PID, define PID parameters
 Kp = 2

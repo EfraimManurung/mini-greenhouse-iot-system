@@ -70,30 +70,33 @@ def is_daytime():
            current_time <= datetime.strptime("18:00", "%H:%M").time()
 
 # Define the function to control heater
-def pid_control_heater(_temperature, iteration):
+def pid_control_heater(current_temperature, iteration):
     if is_daytime():
         temperature_setpoint = temperature_set_point_at_day
     else:
         temperature_setpoint = temperature_set_point_at_night
 
-    pid_heater.setpoint = temperature_setpoint
-    output = pid_heater(_temperature)
+    print("current_temperature: ", current_temperature)
     
-    print("temperature: {}, output: {}, count: {}".format(_temperature, output, iteration))
-    
-    # Turn on the heater for the duration specified by the PID output
-    if output > 0:
-            HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
-            FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
-            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
-            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 1)
-            
-            time.sleep(output)                      # Keep heater on for output seconds
-            HEATER_actuator.actuate_GPIO_LOW()      # Turn heater off
-            FAN_HEATER_actuator.actuate_GPIO_LOW()  # Turn FAN heater off
-            
-            # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
-            logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 0)
+    if current_temperature <= temperature_setpoint:
+        pid_heater.setpoint = temperature_setpoint
+        output = pid_heater(current_temperature)
+        
+        print("temperature setpoint: {}, current temperature: {}, output: {}, count: {}".format(temperature_setpoint, current_temperature, output, iteration))
+        
+        # Turn on the heater for the duration specified by the PID output
+        if output > 0:
+                HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
+                FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
+                # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 1)
+                
+                time.sleep(output)                      # Keep heater on for output seconds
+                HEATER_actuator.actuate_GPIO_LOW()      # Turn heater off
+                FAN_HEATER_actuator.actuate_GPIO_LOW()  # Turn FAN heater off
+                
+                # def send_to_influxdb_data_control(self, measurement = None, actuator = None, value = None):
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 0)
             
 # Main loop
 try:
@@ -101,16 +104,7 @@ try:
     
     while True:
         iteration += 1
-        
-        # bme280 sensors
-        for address in bme280_addresses:
-            temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
-            if all(v is not None for v in [temperature, humidity, pressure]):
-                averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
-                
-                # Call the PID control heater function
-                pid_control_heater(averaged_temperature, iteration)
-                
+                       
         # bme280 sensors
         temp_sum = 0  # Variable to store the sum of averaged temperatures
         count = 0     # Variable to store the count of addresses with valid temperature readings

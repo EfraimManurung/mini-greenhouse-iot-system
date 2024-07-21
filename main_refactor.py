@@ -28,8 +28,8 @@ from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
 from misc.ActuatorGPIO import ActuatorGPIO
 
-# Import PID library
-from simple_pid import PID
+# Import MQTT communication class
+from misc.MqttComm import MqttComm
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -74,6 +74,9 @@ FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
 HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
 # HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 # FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
+
+# Create an instance of the MQTT communication class
+mqtt_comm = MqttComm()
 
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
@@ -236,7 +239,7 @@ try:
         
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
-        av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
+        av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(2, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
 
             # Call the control function control_LED_strip(global_solar_radiation):
@@ -249,6 +252,10 @@ try:
             if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
+        # MQTT Communication
+        json_data = "HAI FROM RASPBERRY PI - EFRAIM"
+        mqtt_comm.publish_mqtt_data(json_data)
+        
 except KeyboardInterrupt:
     # Clean up all the GPIOs
     LEDStrip_actuator.GPIO_cleanup()

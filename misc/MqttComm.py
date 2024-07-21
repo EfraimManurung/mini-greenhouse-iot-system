@@ -10,15 +10,15 @@ class MqttComm:
         # Initiate the MQTT client
         self.client = mqtt.Client()
     
-    def format_data_in_JSON(self, time, ventilation, lamps, heater):
+    def format_data_in_JSON(self, lux, temperature, humidity, co2):
         '''
         Convert data to JSON format and print it.
         
-        Parameters:
-        - time: List of time values
-        - ventilation: List of ventilation control values
-        - lamps: List of lamps control values
-        - heater: List of heater control values
+        Outdoor measurements:
+        - lux: Need to be converted to W / m^2
+        - temperature
+        - humidity
+        - co2
         '''
         
         def convert_to_native(value):
@@ -29,11 +29,20 @@ class MqttComm:
             else:
                 return value
 
+        # Max steps for 20 minutes
+        max_steps = 4
+        
+        # time_max = (self.max_steps + 1) * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
+        # time_steps_seconds = np.linspace(300, time_max, (self.max_steps + 1) * 3)  # Time steps in seconds
+        time_max = self.max_steps * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
+        time_steps_seconds = np.linspace(300, time_max, self.max_steps  * 3)  # Time steps in seconds
+        
         data = {
-            "time": [convert_to_native(v) for v in time],
-            "ventilation": [convert_to_native(v) for v in ventilation],
-            "lamps": [convert_to_native(v) for v in lamps],
-            "heater": [convert_to_native(v) for v in heater]
+            "time": [convert_to_native(v) for v in time_steps_seconds],
+            "lux": [convert_to_native(v) for v in lux],
+            "temperature": [convert_to_native(v) for v in temperature],
+            "humidity": [convert_to_native(v) for v in humidity],
+            "co2": [convert_to_native(v) for v in co2]
         }
 
         json_data = json.dumps(data, indent=4)

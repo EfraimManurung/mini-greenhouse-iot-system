@@ -87,7 +87,20 @@ temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 20                                 # s
+time_period = 20                                # s
+
+# For send the data to the PC server
+outdoor_measurements_interval = 300             # s
+sum_av_lux = 0
+sum_av_temp = 0
+sum_av_hum = 0
+sum_av_co2 = 0 
+
+time_measurements = []
+lux_outdoor_measurements = []
+temp_outdoor_measurements = []
+hum_outdoor_measurements = []
+co2_outdoor_measurements = []
 
 # Check daytime
 def is_daytime_led():
@@ -231,15 +244,57 @@ try:
 
             # Call the control function control_fan(temperature, humidity, iteration)
             control_fan(overall_average_temperature, averaged_humidity, iteration)
-
-        '''
-        TO-DO: Send the weather datasets every 20 minutes to the server (in this case is a PC)
-        
-        '''
         
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
         av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(2, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
+        
+        '''
+        TO-DO: Send the weather datasets every 20 minutes to the server (in this case is a PC).
+        
+        Average per 5 minutes.
+        
+        Convert data to JSON format use format_data_in_JSON method in the MqttComm class
+        
+        Outdoor measurements:
+        - lux: Need to be converted to W / m^2
+        - temperature
+        - humidity
+        - co2
+        '''
+        
+        # Sum the outdoor measurements
+        # Sum it every 60 seconds
+        
+        if iteration % 60:
+            sum_av_lux += av_lux        # Need to be converted in W / m2
+            sum_av_temp += av_temp
+            sum_av_hum += av_hum
+            sum_av_co2 += av_co2
+            
+            if iteration % 300:
+                av_sum_av_lux = sum_av_lux / 5
+                av_sum_av_temp = av_temp / 5
+                av_sum_av_hum = av_hum / 5
+                av_sum_av_co2 = av_co2 / 5
+                
+                # Appending the new measurements to the list
+                time_measurements.extend(iteration)
+                lux_outdoor_measurements.extend(av_sum_av_lux)
+                temp_outdoor_measurements.extend(av_sum_av_temp)
+                hum_outdoor_measurements.extend(av_sum_av_hum)
+                co2_outdoor_measurements.extend(av_sum_av_co2)
+                
+                print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
+                print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
+                
+                # Reset the data
+                sum_av_lux = 0
+                sum_av_temp = 0
+                sum_av_hum = 0
+                sum_av_co2 = 0
+            
+        # Send the data to the database (InfluxDB)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
 
             # Call the control function control_LED_strip(global_solar_radiation):
@@ -253,8 +308,8 @@ try:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
         # MQTT Communication
-        json_data = "HAI FROM RASPBERRY PI - EFRAIM"
-        mqtt_comm.publish_mqtt_data(json_data)
+        # json_data = "HAI FROM RASPBERRY PI - EFRAIM"
+        # mqtt_comm.publish_mqtt_data(json_data)
         
 except KeyboardInterrupt:
     # Clean up all the GPIOs

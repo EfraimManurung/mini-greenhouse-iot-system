@@ -266,24 +266,24 @@ try:
         # Sum the outdoor measurements
         # Sum it every 60 seconds
         
-        if iteration % 60:
+        if iteration % 5 == 0:
             sum_av_lux += av_lux        # Need to be converted in W / m2
             sum_av_temp += av_temp
             sum_av_hum += av_hum
             sum_av_co2 += av_co2
             
-            if iteration % 300:
-                av_sum_av_lux = sum_av_lux / 5
-                av_sum_av_temp = av_temp / 5
-                av_sum_av_hum = av_hum / 5
-                av_sum_av_co2 = av_co2 / 5
+            if iteration % 10 == 0:
+                av_sum_av_lux = sum_av_lux / 2
+                av_sum_av_temp = sum_av_temp / 2
+                av_sum_av_hum = sum_av_hum / 2
+                av_sum_av_co2 = sum_av_co2 / 2
                 
                 # Appending the new measurements to the list
-                time_measurements.extend(iteration)
-                lux_outdoor_measurements.extend(av_sum_av_lux)
-                temp_outdoor_measurements.extend(av_sum_av_temp)
-                hum_outdoor_measurements.extend(av_sum_av_hum)
-                co2_outdoor_measurements.extend(av_sum_av_co2)
+                time_measurements.append(iteration)
+                lux_outdoor_measurements.append(av_sum_av_lux)
+                temp_outdoor_measurements.append(av_sum_av_temp)
+                hum_outdoor_measurements.append(av_sum_av_hum)
+                co2_outdoor_measurements.append(av_sum_av_co2)
                 
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
                 print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
@@ -293,6 +293,15 @@ try:
                 sum_av_temp = 0
                 sum_av_hum = 0
                 sum_av_co2 = 0
+                
+                json_data = mqtt_comm.format_data_in_JSON(time_measurements, \
+                                                        lux_outdoor_measurements, \
+                                                        temp_outdoor_measurements, \
+                                                        hum_outdoor_measurements, \
+                                                        co2_outdoor_measurements)
+                            
+                # publish it to the server
+                mqtt_comm.publish_mqtt_data(json_data)
             
         # Send the data to the database (InfluxDB)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):

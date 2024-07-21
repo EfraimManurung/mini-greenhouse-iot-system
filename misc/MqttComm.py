@@ -5,16 +5,17 @@ import paho.mqtt.client as mqtt
 
 class MqttComm:
     def __init__(self):
-        print(" MqttComm initiated!")
+        print("MqttComm Start!")
         
         # Initiate the MQTT client
         self.client = mqtt.Client()
     
-    def format_data_in_JSON(self, lux, temperature, humidity, co2):
+    def format_data_in_JSON(self, time, lux, temperature, humidity, co2):
         '''
         Convert data to JSON format and print it.
         
         Outdoor measurements:
+        - time: from main loop iteration in 1 s
         - lux: Need to be converted to W / m^2
         - temperature
         - humidity
@@ -30,15 +31,15 @@ class MqttComm:
                 return value
 
         # Max steps for 20 minutes
-        max_steps = 4
+        # max_steps = 4
         
         # time_max = (self.max_steps + 1) * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
         # time_steps_seconds = np.linspace(300, time_max, (self.max_steps + 1) * 3)  # Time steps in seconds
-        time_max = self.max_steps * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
-        time_steps_seconds = np.linspace(300, time_max, self.max_steps  * 3)  # Time steps in seconds
+        # time_max = self.max_steps * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
+        # time_steps_seconds = np.linspace(300, time_max, self.max_steps  * 3)  # Time steps in seconds
         
         data = {
-            "time": [convert_to_native(v) for v in time_steps_seconds],
+            "time": [convert_to_native(v) for v in time],
             "lux": [convert_to_native(v) for v in lux],
             "temperature": [convert_to_native(v) for v in temperature],
             "humidity": [convert_to_native(v) for v in humidity],

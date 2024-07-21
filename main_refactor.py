@@ -229,6 +229,11 @@ try:
             # Call the control function control_fan(temperature, humidity, iteration)
             control_fan(overall_average_temperature, averaged_humidity, iteration)
 
+        '''
+        TO-DO: Send the weather datasets every 20 minutes to the server (in this case is a PC)
+        
+        '''
+        
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
         av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)

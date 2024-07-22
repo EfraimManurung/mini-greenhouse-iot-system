@@ -11,7 +11,7 @@ Main program
 
 # Import libraries that needed for the project
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import smbus2
 
 # Import sensor classes
@@ -90,12 +90,26 @@ temperature_set_point_at_day = 19.5             # [°C]
 time_period = 20                                # s
 
 # For send the data to the PC server
-outdoor_measurements_interval = 300             # s
-sum_av_lux = 0
-sum_av_temp = 0
-sum_av_hum = 0
-sum_av_co2 = 0 
+# outdoor_measurements_interval = 300             # s
+# sum_av_lux = 0
+# sum_av_temp = 0
+# sum_av_hum = 0
+# sum_av_co2 = 0 
 
+# Initialize time tracking
+last_5_minutes = datetime.now()
+
+# Sum variables for 5 minutes intervals
+sum_5_minutes_lux = 0
+sum_5_minutes_temp = 0
+sum_5_minutes_hum = 0
+sum_5_minutes_co2 = 0
+count_5_minutes = 0
+
+# Count for time measurements
+count_time_measurements = 0
+
+# List for the outdoor measurements
 time_measurements = []
 lux_outdoor_measurements = []
 temp_outdoor_measurements = []
@@ -185,6 +199,9 @@ try:
     # LEDStrip_actuator.LED_ON(100)
     
     while True:
+        # Track current time
+        current_time = datetime.now()
+        
         # Testing ALL THE ACTUATORS with this METHODS
         # HUMIDIFIER_actuator.actuate_GPIO_HIGH()
         # FAN_actuator.actuate_FAN(100)
@@ -263,46 +280,69 @@ try:
         - co2
         '''
         
-        # Sum the outdoor measurements
-        # Sum it every 60 seconds
+        # Accumulate 5-minutes measurements
+        sum_5_minutes_lux += av_lux
+        sum_5_minutes_temp += av_temp
+        sum_5_minutes_hum += av_hum
+        sum_5_minutes_co2 += av_co2
+        count_5_minutes += 1
         
-        if iteration % 60 == 0:
-            sum_av_lux += av_lux        # Need to be converted in W / m2
-            sum_av_temp += av_temp
-            sum_av_hum += av_hum
-            sum_av_co2 += av_co2
+        # Calculate and send 5-minutes average data
+        if (current_time - last_5_minutes).seconds >= 10:
             
-            if iteration % 300 == 0:
-                av_sum_av_lux = sum_av_lux / 5
-                av_sum_av_temp = sum_av_temp / 5
-                av_sum_av_hum = sum_av_hum / 5
-                av_sum_av_co2 = sum_av_co2 / 5
+            # Count if exceed 4 times then it is equal to 20 minutes
+            count_time_measurements += 1
+            
+            # Average the data 
+            avg_5_minutes_lux = sum_5_minutes_lux / count_5_minutes
+            avg_5_minutes_temp = sum_5_minutes_temp / count_5_minutes
+            avg_5_minutes_hum = sum_5_minutes_hum / count_5_minutes
+            avg_5_minutes_co2 = sum_5_minutes_co2 / count_5_minutes
+            
+            # Reset 5-minutes accumulators
+            sum_5_minutes_lux = 0
+            sum_5_minutes_temp = 0
+            sum_5_minutes_hum = 0
+            sum_5_minutes_co2 = 0
+            count_5_minutes = 0
+            
+            last_5_minutes = current_time
+            
+            print("5-minutes averages:", avg_5_minutes_lux, avg_5_minutes_temp, avg_5_minutes_hum, avg_5_minutes_co2)
+            
+            # Appending the new measurements to the list
+            calculate_time = count_time_measurements * 300
+            time_measurements.append(calculate_time)
+            lux_outdoor_measurements.append(avg_5_minutes_lux)
+            temp_outdoor_measurements.append(avg_5_minutes_temp)
+            hum_outdoor_measurements.append(avg_5_minutes_hum)
+            co2_outdoor_measurements.append(avg_5_minutes_co2)
+            
+            print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
+            print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
+            
+            if count_time_measurements == 4:
+                # Reset count_time_measurements
+                count_time_measurements = 0
                 
-                # Appending the new measurements to the list
-                time_measurements.append(iteration)
-                lux_outdoor_measurements.append(av_sum_av_lux)
-                temp_outdoor_measurements.append(av_sum_av_temp)
-                hum_outdoor_measurements.append(av_sum_av_hum)
-                co2_outdoor_measurements.append(av_sum_av_co2)
-                
-                print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
-                print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
-                
-                # Reset the data
-                sum_av_lux = 0
-                sum_av_temp = 0
-                sum_av_hum = 0
-                sum_av_co2 = 0
-                
+                # Format data into JSON format
                 json_data = mqtt_comm.format_data_in_JSON(time_measurements, \
                                                         lux_outdoor_measurements, \
                                                         temp_outdoor_measurements, \
                                                         hum_outdoor_measurements, \
                                                         co2_outdoor_measurements)
                             
-                # publish it to the server
+                # Publish it to the server
                 mqtt_comm.publish_mqtt_data(json_data)
-            
+                
+                # Reset the outdoor measurements
+                # List for the outdoor measurements
+                time_measurements = []
+                lux_outdoor_measurements = []
+                temp_outdoor_measurements = []
+                hum_outdoor_measurements = []
+                co2_outdoor_measurements = []
+        
         # Send the data to the database (InfluxDB)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
 

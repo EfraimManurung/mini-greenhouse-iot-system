@@ -52,7 +52,7 @@ class MqttComm:
     
     def publish_mqtt_data(self, json_data, broker="localhost", port=1883, topic="greenhouse/outdoor-measurements"):
         '''
-        Publish JSON data to an MQTT broker.
+        Publish JSON data to a MQTT broker.
         
         Parameters:
         - json_data: JSON formatted data to publish

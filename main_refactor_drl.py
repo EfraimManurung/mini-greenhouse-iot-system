@@ -106,8 +106,9 @@ sum_5_minutes_hum = 0
 sum_5_minutes_co2 = 0
 count_5_minutes = 0
 
-# Count for time measurements
+# Count for time measurements and publish
 count_time_measurements = 0
+count_publish = 0
 
 # List for the outdoor measurements
 time_measurements = []
@@ -292,6 +293,7 @@ try:
             
             # Count if exceed 4 times then it is equal to 20 minutes
             count_time_measurements += 1
+            # count_publish += 1
             
             # Average the data 
             avg_5_minutes_lux = sum_5_minutes_lux / count_5_minutes
@@ -321,9 +323,11 @@ try:
             print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
             print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
             
+            #if count_publish == 4:
             if count_time_measurements == 4:
                 # Reset count_time_measurements
                 count_time_measurements = 0
+                # count_publish = 0
                 
                 # Format data into JSON format
                 json_data = mqtt_comm.format_data_in_JSON(time_measurements, \

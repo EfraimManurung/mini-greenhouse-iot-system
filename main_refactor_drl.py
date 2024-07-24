@@ -97,7 +97,6 @@ count_5_minutes = 0
 
 # Count for time measurements and publish
 count_time_measurements = 0
-
 count_publish = 0
 
 # List for the outdoor measurements
@@ -270,12 +269,15 @@ try:
         if subscribe_mqtt_flag == True and controls_flag == True:
             drl_time, drl_ventilation, drl_lamps, drl_heater = mqtt_comm.subscribe_mqtt_data()
             
+            print("")
             print("ACTIONS OR CONTROLS FROM PC SERVER!")
             print("drl_time : ", drl_time)
             print("drl_ventilation : ", drl_ventilation)
             print("drl_lamps : ", drl_lamps)
             print("drl_heater : ", drl_heater)
+            print("")
             
+            # Change flags for the MQTT and controls
             publish_mqtt_flag = True
             subscribe_mqtt_flag = False
             controls_flag = False
@@ -284,22 +286,41 @@ try:
             TO-DO: Turn on the actuators based on the actions from DRL model
             '''
             
-            # Controls the actuators
-            print("CONTROL THE ACTUATORS")
-            print("drl_time CONTROLS : ", drl_time[0])
-            print("drl_ventilation CONTROLS: ", drl_ventilation[0])
-            print("drl_lamps CONTROLS: ", drl_lamps[0])
-            print("drl_heater CONTROLS: ", drl_heater[0])
+            # Take the controls variables, to control the actuators
+            # There are 4 data or [0, 1, 2, 3]
+            # But we only use the first one, because all of it the same for 15 minutes
+            current_ventilation = drl_ventilation[0]
+            current_lamps = drl_lamps[0]
+            current_heater = drl_heater[0]
             
-            # Calculate 15-minutes interval
-            # if (current_time - last_15_minutes).seconds >= 900:
-            #     last_15_minutes = current_time
+            # Turn on or off the actuators based on the controls
+            
+            # Control ventilation/fan
+            if current_ventilation > 0.0:
+                print("FAN TURN ON!")
+                FAN_actuator.actuate_FAN(100) # Turn on FAN
+            else:
+                print("FAN TURN OFF")
+                FAN_actuator.actuate_FAN(0)   # Turn off FAN
                 
-            #     # Change publish and subscribe flags   
-            #     # So, we can get the next actions/controls
-            #     publish_mqtt_flag = True
-            #     subscribe_mqtt_flag = False
-        
+            # Control lamps/LED Strip
+            if current_lamps > 0.0:
+                print("LED STRIP TURN ON!")
+                LEDStrip_actuator.LED_ON(100) # Turn on LED
+            else:
+                print("LED STRIP TURN OFF!")
+                LEDStrip_actuator.LED_ON(0)  # Turn off LED
+                
+            # Control heater
+            if current_heater > 0.0:
+                print("HEATER TURN ON!")
+                HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
+                FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
+            else:
+                print("HEATER TURN OFF!")
+                HEATER_actuator.actuate_GPIO_LOW()     # Turn heater off
+                FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
+            
         # Calculate 15-minutes interval
         if (current_time - last_15_minutes).seconds >= 15:
             last_15_minutes = current_time

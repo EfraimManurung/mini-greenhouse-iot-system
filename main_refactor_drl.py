@@ -201,7 +201,7 @@ try:
             count_5_minutes += 1
             
             # Calculate and send 5-minutes average data
-            if (current_time - last_5_minutes).seconds >= 5:
+            if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -227,6 +227,8 @@ try:
                 # Appending the new measurements to the list
                 calculate_time = count_time_measurements * 300
                 time_measurements.append(calculate_time)
+                
+                # Append twice because the DRL model need 4 data but in real experiment only need 3
                 lux_outdoor_measurements.append(avg_5_minutes_lux)
                 temp_outdoor_measurements.append(avg_5_minutes_temp)
                 hum_outdoor_measurements.append(avg_5_minutes_hum)
@@ -235,7 +237,7 @@ try:
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
                 print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
                 
-                if count_time_measurements == 3:
+                if count_time_measurements == 4:
                     
                     # Count 
                     count_publish_mqtt_flag += 1
@@ -322,7 +324,7 @@ try:
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
         # Calculate 15-minutes interval
-        if (current_time - last_15_minutes).seconds >= 15:
+        if (current_time - last_15_minutes).seconds >= 12:
             last_15_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

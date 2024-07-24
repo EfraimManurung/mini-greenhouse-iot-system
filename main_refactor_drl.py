@@ -4,7 +4,7 @@ mini-greenhouse-iot-system
 mini greenhouse IoT system using DRL model from PC server.
 
 Author: Efraim Manurung
-MSc Thesis in Information Technology Group, Wageningen University
+Information Technology Group, Wageningen University
 
 efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
@@ -14,7 +14,7 @@ Main program
 
 # Import libraries that needed for the project
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 import smbus2
 
 # Import sensor classes
@@ -82,7 +82,7 @@ FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 mqtt_comm = MqttComm()
 
 # Send data every 30 seconds
-time_period = 30           
+time_period = 20           
 
 # Initialize time tracking
 last_5_minutes = datetime.now()
@@ -238,14 +238,14 @@ try:
                     
                     # Need to publish twice in the beginning
                
-                    if count_publish_mqtt_flag == 2:
+                    # if count_publish_mqtt_flag == 1:
                         # Change the flag of publis MQTT
-                        publish_mqtt_flag = False
-                        subscribe_mqtt_flag = True
+                        # publish_mqtt_flag = False
+                        # subscribe_mqtt_flag = True
                         # count_publish_mqtt_flag = 0
                     
-                    # publish_mqtt_flag = False
-                    # subscribe_mqtt_flag = True
+                    publish_mqtt_flag = False
+                    subscribe_mqtt_flag = True
                     
                     # Reset count_time_measurements
                     count_time_measurements = 0
@@ -277,7 +277,8 @@ try:
             print("drl_lamps : ", drl_lamps)
             print("drl_heater : ", drl_heater)
             
-            publish_mqtt_flag = False
+            publish_mqtt_flag = True
+            subscribe_mqtt_flag = False
         
 except KeyboardInterrupt:
     # Clean up all the GPIOs

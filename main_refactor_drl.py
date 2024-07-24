@@ -49,7 +49,7 @@ LEDStrip_GPIO = 17
 LEDBlink_GPIO = 12
 
 FAN_GPIO = 26
-HUMIDIFIER_GPIO = 16
+# HUMIDIFIER_GPIO = 16
 HEATER_GPIO = 6
 FAN_HEATER_GPIO = 5
 
@@ -74,7 +74,7 @@ LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
-HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
+# HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
 HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
@@ -85,7 +85,8 @@ mqtt_comm = MqttComm()
 time_period = 20           
 
 # Initialize time tracking
-last_5_minutes = datetime.now()
+last_5_minutes = datetime.now() # for the measurements
+last_15_minutes = datetime.now() # for the controls
 
 # Sum variables for 5 minutes intervals
 sum_5_minutes_lux = 0
@@ -96,6 +97,7 @@ count_5_minutes = 0
 
 # Count for time measurements and publish
 count_time_measurements = 0
+
 count_publish = 0
 
 # List for the outdoor measurements
@@ -108,6 +110,9 @@ co2_outdoor_measurements = []
 # flag for publish and subscribe
 publish_mqtt_flag = True
 subscribe_mqtt_flag = False
+
+# flag for controls
+controls_flag = True
 
 # Count for how many publish the data
 # Needed for the DRL model twice
@@ -197,7 +202,7 @@ try:
             count_5_minutes += 1
             
             # Calculate and send 5-minutes average data
-            if (current_time - last_5_minutes).seconds >= 10:
+            if (current_time - last_5_minutes).seconds >= 5:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -231,19 +236,13 @@ try:
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
                 print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
                 
-                if count_time_measurements == 4:
-                    # Change publish and subscribe flags into false
+                if count_time_measurements == 3:
+                    
+                    # Count 
                     count_publish_mqtt_flag += 1
                     print("COUNT PUBLISH MQTT FLAG : ", count_publish_mqtt_flag)
                     
-                    # Need to publish twice in the beginning
-               
-                    # if count_publish_mqtt_flag == 1:
-                        # Change the flag of publis MQTT
-                        # publish_mqtt_flag = False
-                        # subscribe_mqtt_flag = True
-                        # count_publish_mqtt_flag = 0
-                    
+                    # Change publish and subscribe flags               
                     publish_mqtt_flag = False
                     subscribe_mqtt_flag = True
                     
@@ -267,8 +266,8 @@ try:
                     temp_outdoor_measurements = []
                     hum_outdoor_measurements = []
                     co2_outdoor_measurements = []
-        
-        if subscribe_mqtt_flag == True:
+                    
+        if subscribe_mqtt_flag == True and controls_flag == True:
             drl_time, drl_ventilation, drl_lamps, drl_heater = mqtt_comm.subscribe_mqtt_data()
             
             print("ACTIONS OR CONTROLS FROM PC SERVER!")
@@ -279,13 +278,40 @@ try:
             
             publish_mqtt_flag = True
             subscribe_mqtt_flag = False
+            controls_flag = False
+            
+            '''
+            TO-DO: Turn on the actuators based on the actions from DRL model
+            '''
+            
+            # Controls the actuators
+            print("CONTROL THE ACTUATORS")
+            print("drl_time CONTROLS : ", drl_time[0])
+            print("drl_ventilation CONTROLS: ", drl_ventilation[0])
+            print("drl_lamps CONTROLS: ", drl_lamps[0])
+            print("drl_heater CONTROLS: ", drl_heater[0])
+            
+            # Calculate 15-minutes interval
+            # if (current_time - last_15_minutes).seconds >= 900:
+            #     last_15_minutes = current_time
+                
+            #     # Change publish and subscribe flags   
+            #     # So, we can get the next actions/controls
+            #     publish_mqtt_flag = True
+            #     subscribe_mqtt_flag = False
         
+        # Calculate 15-minutes interval
+        if (current_time - last_15_minutes).seconds >= 15:
+            last_15_minutes = current_time
+            controls_flag = True
+            print("CONTROLS FLAG TRUE!!")
+                
 except KeyboardInterrupt:
     # Clean up all the GPIOs
     LEDStrip_actuator.GPIO_cleanup()
     LEDBlink_actuator.GPIO_cleanup()
     FAN_actuator.GPIO_cleanup()
-    HUMIDIFIER_actuator.GPIO_cleanup()
+    # HUMIDIFIER_actuator.GPIO_cleanup()
     HEATER_actuator.GPIO_cleanup()
     FAN_HEATER_actuator.GPIO_cleanup()
     

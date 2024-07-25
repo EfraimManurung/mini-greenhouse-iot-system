@@ -201,7 +201,10 @@ try:
             count_5_minutes += 1
             
             # Calculate and send 5-minutes average data
-            if (current_time - last_5_minutes).seconds >= 3:
+            # 15 minutes / 4 = 3.75 minutes
+            # 3.75 minutes = 225 seconds 
+          
+            if (current_time - last_5_minutes).seconds >= 225:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1

@@ -223,8 +223,11 @@ try:
                 hum_outdoor_measurements.append(avg_5_minutes_hum)
                 co2_outdoor_measurements.append(avg_5_minutes_co2)
                 
+                print("TIME OUTDOOR MEASUREMENTS: ", time_measurements)
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
                 print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
+                print("HUM OUTDOOR MEASUREMENTS: ", hum_outdoor_measurements)
+                print("CO2 OUTDOOR MEASUREMENTS: ", co2_outdoor_measurements)
                 
                 if count_time_measurements == 4:
                     

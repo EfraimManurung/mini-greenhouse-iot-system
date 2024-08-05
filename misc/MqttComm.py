@@ -55,7 +55,7 @@ class MqttComm:
         }
 
         json_data = json.dumps(data, indent=4)
-        print("JSON DATA: ", json_data)
+        # print("JSON DATA: ", json_data)
         return json_data
     
     def publish_mqtt_data(self, json_data, broker="localhost", port=1883, topic="greenhouse-iot-system/outdoor-measurements"):
@@ -94,7 +94,7 @@ class MqttComm:
             client.subscribe(topic)
             
         def on_message(client, userdata, msg):
-            print(msg.topic + " " + str(msg.payload.decode()))
+            # print(msg.topic + " " + str(msg.payload.decode()))
             # Parse the JSON data
             data = json.loads(msg.payload.decode())
             

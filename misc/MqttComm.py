@@ -1,3 +1,13 @@
+'''
+mini-greenhouse-iot-system
+Author: Efraim Manurung
+MSc Thesis in Information Technology Group, Wageningen University
+
+efraim.efraimpartoginahotasi@wur.nl
+efraim.manurung@gmail.com
+
+MqttComm for the IoT sytem
+'''
 import numpy as np
 import json
 
@@ -36,14 +46,6 @@ class MqttComm:
             else:
                 return value
 
-        # Max steps for 20 minutes
-        # max_steps = 4
-        
-        # time_max = (self.max_steps + 1) * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
-        # time_steps_seconds = np.linspace(300, time_max, (self.max_steps + 1) * 3)  # Time steps in seconds
-        # time_max = self.max_steps * 900 # for e.g. 4 steps * 900 (15 minutes) = 60 minutes
-        # time_steps_seconds = np.linspace(300, time_max, self.max_steps  * 3)  # Time steps in seconds
-        
         data = {
             "time": [convert_to_native(v) for v in time],
             "lux": [convert_to_native(v) for v in lux],
@@ -135,8 +137,8 @@ class MqttComm:
         # Extract variables
         time = data.get("time", [])
         ventilation = data.get("ventilation", [])
-        lamps = data.get("lamps", [])
+        toplights = data.get("toplights", [])
         heater = data.get("heater", [])
         
-        return time, ventilation, lamps, heater
+        return time, ventilation, toplights, heater
     

@@ -1,7 +1,8 @@
 '''
 mini-greenhouse-iot-system
 
-mini greenhouse IoT system using DRL model from PC server.
+mini greenhouse IoT system firmware using DRL model from PC server that can controls actuators and
+get measurements from sensors with Raspberry Pi 5.
 
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
@@ -178,20 +179,6 @@ try:
             if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
         
-        '''
-        TO-DO: Send the weather datasets every 20 minutes to the server (in this case is a PC).
-        
-        Average per 5 minutes.
-        
-        Convert data to JSON format use format_data_in_JSON method in the MqttComm class
-        
-        Outdoor measurements:
-        - lux: Need to be converted to W / m^2
-        - temperature
-        - humidity
-        - co2
-        '''
-        
         if publish_mqtt_flag == True:
             # Accumulate 5-minutes measurements
             sum_5_minutes_lux += av_lux
@@ -201,10 +188,9 @@ try:
             count_5_minutes += 1
             
             # Calculate and send 5-minutes average data
-            # 15 minutes / 4 = 3.75 minutes
-            # 3.75 minutes = 225 seconds 
-          
-            if (current_time - last_5_minutes).seconds >= 225:
+
+            # if (current_time - last_5_minutes).seconds >= 300:
+            if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -272,13 +258,13 @@ try:
                     co2_outdoor_measurements = []
                     
         if subscribe_mqtt_flag == True and controls_flag == True:
-            drl_time, drl_ventilation, drl_lamps, drl_heater = mqtt_comm.subscribe_mqtt_data()
+            drl_time, drl_ventilation, drl_toplights, drl_heater = mqtt_comm.subscribe_mqtt_data()
             
             print("")
             print("ACTIONS OR CONTROLS FROM PC SERVER!")
             print("drl_time : ", drl_time)
             print("drl_ventilation : ", drl_ventilation)
-            print("drl_lamps : ", drl_lamps)
+            print("drl_lamps : ", drl_toplights)
             print("drl_heater : ", drl_heater)
             print("")
             
@@ -295,7 +281,7 @@ try:
             # There are 4 data or [0, 1, 2, 3]
             # But we only use the first one, because all of it the same for 15 minutes
             current_ventilation = drl_ventilation[0]
-            current_lamps = drl_lamps[0]
+            current_lamps = drl_toplights[0]
             current_heater = drl_heater[0]
             
             # Turn on or off the actuators based on the controls
@@ -327,6 +313,7 @@ try:
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
         # Calculate 15-minutes interval
+        # if (current_time - last_15_minutes).seconds >= 1200:
         if (current_time - last_15_minutes).seconds >= 12:
             last_15_minutes = current_time
             controls_flag = True

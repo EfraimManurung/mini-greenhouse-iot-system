@@ -11,7 +11,7 @@ Main program
 
 # Import libraries that needed for the project
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 import smbus2
 
 # Import sensor classes
@@ -28,8 +28,8 @@ from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
 from misc.ActuatorGPIO import ActuatorGPIO
 
-# Import MQTT communication class
-from misc.MqttComm import MqttComm
+# Import PID library
+from simple_pid import PID
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
@@ -75,9 +75,6 @@ HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
 # HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
 # FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
-# Create an instance of the MQTT communication class
-mqtt_comm = MqttComm()
-
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
 co2_set_point = 1000.0                          # [ppm]                 There is no control for co2 
@@ -87,34 +84,7 @@ temperature_set_point_at_night = 18.5           # [°C]
 temperature_set_point_at_day = 19.5             # [°C]
 
 # Send data every seconds
-time_period = 20                                # s
-
-# For send the data to the PC server
-# outdoor_measurements_interval = 300             # s
-# sum_av_lux = 0
-# sum_av_temp = 0
-# sum_av_hum = 0
-# sum_av_co2 = 0 
-
-# Initialize time tracking
-last_5_minutes = datetime.now()
-
-# Sum variables for 5 minutes intervals
-sum_5_minutes_lux = 0
-sum_5_minutes_temp = 0
-sum_5_minutes_hum = 0
-sum_5_minutes_co2 = 0
-count_5_minutes = 0
-
-# Count for time measurements
-count_time_measurements = 0
-
-# List for the outdoor measurements
-time_measurements = []
-lux_outdoor_measurements = []
-temp_outdoor_measurements = []
-hum_outdoor_measurements = []
-co2_outdoor_measurements = []
+time_period = 20                                 # s
 
 # Check daytime
 def is_daytime_led():
@@ -199,9 +169,6 @@ try:
     # LEDStrip_actuator.LED_ON(100)
     
     while True:
-        # Track current time
-        current_time = datetime.now()
-        
         # Testing ALL THE ACTUATORS with this METHODS
         # HUMIDIFIER_actuator.actuate_GPIO_HIGH()
         # FAN_actuator.actuate_FAN(100)
@@ -261,89 +228,10 @@ try:
 
             # Call the control function control_fan(temperature, humidity, iteration)
             control_fan(overall_average_temperature, averaged_humidity, iteration)
-        
+
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
-        av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(2, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
-        
-        '''
-        TO-DO: Send the weather datasets every 20 minutes to the server (in this case is a PC).
-        
-        Average per 5 minutes.
-        
-        Convert data to JSON format use format_data_in_JSON method in the MqttComm class
-        
-        Outdoor measurements:
-        - lux: Need to be converted to W / m^2
-        - temperature
-        - humidity
-        - co2
-        '''
-        
-        # Accumulate 5-minutes measurements
-        sum_5_minutes_lux += av_lux
-        sum_5_minutes_temp += av_temp
-        sum_5_minutes_hum += av_hum
-        sum_5_minutes_co2 += av_co2
-        count_5_minutes += 1
-        
-        # Calculate and send 5-minutes average data
-        if (current_time - last_5_minutes).seconds >= 10:
-            
-            # Count if exceed 4 times then it is equal to 20 minutes
-            count_time_measurements += 1
-            
-            # Average the data 
-            avg_5_minutes_lux = sum_5_minutes_lux / count_5_minutes
-            avg_5_minutes_temp = sum_5_minutes_temp / count_5_minutes
-            avg_5_minutes_hum = sum_5_minutes_hum / count_5_minutes
-            avg_5_minutes_co2 = sum_5_minutes_co2 / count_5_minutes
-            
-            # Reset 5-minutes accumulators
-            sum_5_minutes_lux = 0
-            sum_5_minutes_temp = 0
-            sum_5_minutes_hum = 0
-            sum_5_minutes_co2 = 0
-            count_5_minutes = 0
-            
-            last_5_minutes = current_time
-            
-            print("5-minutes averages:", avg_5_minutes_lux, avg_5_minutes_temp, avg_5_minutes_hum, avg_5_minutes_co2)
-            
-            # Appending the new measurements to the list
-            calculate_time = count_time_measurements * 300
-            time_measurements.append(calculate_time)
-            lux_outdoor_measurements.append(avg_5_minutes_lux)
-            temp_outdoor_measurements.append(avg_5_minutes_temp)
-            hum_outdoor_measurements.append(avg_5_minutes_hum)
-            co2_outdoor_measurements.append(avg_5_minutes_co2)
-            
-            print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
-            print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
-            
-            if count_time_measurements == 4:
-                # Reset count_time_measurements
-                count_time_measurements = 0
-                
-                # Format data into JSON format
-                json_data = mqtt_comm.format_data_in_JSON(time_measurements, \
-                                                        lux_outdoor_measurements, \
-                                                        temp_outdoor_measurements, \
-                                                        hum_outdoor_measurements, \
-                                                        co2_outdoor_measurements)
-                            
-                # Publish it to the server
-                mqtt_comm.publish_mqtt_data(json_data)
-                
-                # Reset the outdoor measurements
-                # List for the outdoor measurements
-                time_measurements = []
-                lux_outdoor_measurements = []
-                temp_outdoor_measurements = []
-                hum_outdoor_measurements = []
-                co2_outdoor_measurements = []
-        
-        # Send the data to the database (InfluxDB)
+        av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(5, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
         if any(val is not None for val in [av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2]):
 
             # Call the control function control_LED_strip(global_solar_radiation):
@@ -356,10 +244,6 @@ try:
             if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
 
-        # MQTT Communication
-        # json_data = "HAI FROM RASPBERRY PI - EFRAIM"
-        # mqtt_comm.publish_mqtt_data(json_data)
-        
 except KeyboardInterrupt:
     # Clean up all the GPIOs
     LEDStrip_actuator.GPIO_cleanup()

@@ -26,7 +26,7 @@ class MqttComm:
         self.message_received = False  # Initialize message_received flag
         self.received_data = None # To store received data
     
-    def format_data_in_JSON(self, time, lux, temperature, humidity, co2):
+    def format_data_in_JSON(self, time, par_out, par_in, temp_out, temp_in, hum_out, hum_in, co2_out, co2_in):
         '''
         Convert data to JSON format and print it.
         
@@ -48,10 +48,14 @@ class MqttComm:
 
         data = {
             "time": [convert_to_native(v) for v in time],
-            "lux": [convert_to_native(v) for v in lux],
-            "temperature": [convert_to_native(v) for v in temperature],
-            "humidity": [convert_to_native(v) for v in humidity],
-            "co2": [convert_to_native(v) for v in co2]
+            "par_out": [convert_to_native(v) for v in par_out],
+            "par_in": [convert_to_native(v) for v in par_in],
+            "temp_out": [convert_to_native(v) for v in temp_out],
+            "temp_in": [convert_to_native(v) for v in temp_in],
+            "hum_out": [convert_to_native(v) for v in hum_out],
+            "hum_in": [convert_to_native(v) for v in hum_in],
+            "co2_out": [convert_to_native(v) for v in co2_out],
+            "co2_in": [convert_to_native(v) for v in co2_in]
         }
 
         json_data = json.dumps(data, indent=4)
@@ -78,7 +82,7 @@ class MqttComm:
         self.client_pub.connect(broker, port, 60)
         self.client_pub.loop_start()
 
-    def subscribe_mqtt_data(self, broker="192.168.1.131", port=1883, topic="greenhouse-iot-system/drl-controls"):
+    def subscribe_mqtt_data(self, broker="localhost", port=1883, topic="greenhouse-iot-system/drl-controls"):
         '''
         Subscribe JSON data from a MQTT broker.
         

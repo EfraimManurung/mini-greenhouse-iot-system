@@ -90,10 +90,16 @@ last_5_minutes = datetime.now() # for the measurements
 last_15_minutes = datetime.now() # for the controls
 
 # Sum variables for 5 minutes intervals
-sum_5_minutes_lux = 0
-sum_5_minutes_temp = 0
-sum_5_minutes_hum = 0
-sum_5_minutes_co2 = 0
+sum_5_minutes_lux_out = 0
+sum_5_minutes_temp_out = 0
+sum_5_minutes_hum_out = 0
+sum_5_minutes_co2_out = 0
+
+sum_5_minutes_lux_in = 0
+sum_5_minutes_temp_in = 0
+sum_5_minutes_hum_in = 0
+sum_5_minutes_co2_in = 0
+
 count_5_minutes = 0
 
 # Count for time measurements and publish
@@ -107,6 +113,12 @@ temp_outdoor_measurements = []
 hum_outdoor_measurements = []
 co2_outdoor_measurements = []
 
+# Lift for the indoor measurements
+lux_indoor_measurements = []
+temp_indoor_measurements = []
+hum_indoor_measurements = []
+co2_indoor_measurements = []
+
 # flag for publish and subscribe
 publish_mqtt_flag = True
 subscribe_mqtt_flag = False
@@ -118,11 +130,31 @@ controls_flag = True
 # Needed for the DRL model twice
 count_publish_mqtt_flag = 0
 
+# Initialize the sum of variables to average two sensors
+co2_in_sum = 0
+temp_in_sum = 0
+hum_in_sum = 0
+light_in_sum = 0
+count_co2 = 0
+count_temp = 0
+count_hum = 0
+count_light = 0
+
 # Main loop 
 try:
     iteration = 0
     
     while True:
+        # Reset the sum of variables
+        co2_in_sum = 0
+        temp_in_sum = 0
+        hum_in_sum = 0
+        light_in_sum = 0
+        count_co2 = 0
+        count_temp = 0
+        count_hum = 0
+        count_light = 0
+        
         # Track current time
         current_time = datetime.now()
             
@@ -140,7 +172,11 @@ try:
         co2, temperature_co2 = mhz19_sensor.read_sensor_data()
         if co2 is not None and temperature_co2 is not None:
             averaged_co2, averaged_temperature_co2 = mhz19_sensor.average_sensor_data(3, co2, temperature_co2)
-        
+
+            # Add averaged co2 to the sum
+            co2_in_sum += averaged_co2
+            count_co2 += 1
+            
             if iteration % time_period == 0:
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                 logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
@@ -151,6 +187,10 @@ try:
             if light is not None:
                 averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
                 
+                # Add averaged light to the sum
+                light_in_sum += averaged_light
+                count_light += 1
+                
                 if iteration % time_period == 0:                       
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
                     logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
@@ -160,6 +200,12 @@ try:
             temperature, humidity, pressure = bme280_sensors.read_sensor_data(address)
             if all(v is not None for v in [temperature, humidity, pressure]):
                 averaged_temperature, averaged_humidity, averaged_pressure = bme280_sensors.average_sensor_data(3, address, temperature, humidity, pressure)
+                
+                # Add averaged temperature to the sum
+                temp_in_sum += averaged_temperature
+                count_temp += 1
+                
+                # Add averaged humitidy to the sum
                 
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
@@ -179,12 +225,32 @@ try:
             if iteration % time_period == 0:
                 logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
         
+        # Calculate the overall average temperature
+        if count_light > 0 and count_temp > 0 and count_co2 > 0 and count_hum > 0:
+            overall_average_light = light_in_sum / count_light
+            overall_average_temperature = temp_in_sum / count_temp
+            overall_average_humidity = hum_in_sum / count_hum
+            overall_average_co2 = co2_in_sum / count_co2
+            
+            print(f"Overall average light: {overall_average_light}")
+            print(f"Overall average temperature: {overall_average_temperature}")
+            print(f"Overall average humidity: {overall_average_humidity}")
+            print(f"Overall average co2: {overall_average_co2}")
+        
+        
         if publish_mqtt_flag == True:
-            # Accumulate 5-minutes measurements
-            sum_5_minutes_lux += av_lux
-            sum_5_minutes_temp += av_temp
-            sum_5_minutes_hum += av_hum
-            sum_5_minutes_co2 += av_co2
+            # Accumulate 5-minutes outdoor measurements
+            sum_5_minutes_lux_out += av_lux
+            sum_5_minutes_temp_out += av_temp
+            sum_5_minutes_hum_out += av_hum
+            sum_5_minutes_co2_out += av_co2
+            
+            # Accumulate 5-minutes indoor measurements
+            sum_5_minutes_lux_in += overall_average_light
+            sum_5_minutes_temp_in += overall_average_temperature
+            sum_5_minutes_hum_in += overall_average_humidity
+            sum_5_minutes_co2_in += overall_average_co2
+            
             count_5_minutes += 1
             
             # Calculate and send 5-minutes average data
@@ -197,37 +263,61 @@ try:
                 print("COUNT TIME MEASUREMENTS : ", count_time_measurements)
                 
                 # Average the data 
-                avg_5_minutes_lux = sum_5_minutes_lux / count_5_minutes
-                avg_5_minutes_temp = sum_5_minutes_temp / count_5_minutes
-                avg_5_minutes_hum = sum_5_minutes_hum / count_5_minutes
-                avg_5_minutes_co2 = sum_5_minutes_co2 / count_5_minutes
+                avg_5_minutes_lux_out = sum_5_minutes_lux_out / count_5_minutes
+                avg_5_minutes_temp_out = sum_5_minutes_temp_out / count_5_minutes
+                avg_5_minutes_hum_out = sum_5_minutes_hum_out / count_5_minutes
+                avg_5_minutes_co2_out = sum_5_minutes_co2_out / count_5_minutes
+                
+                avg_5_minutes_lux_in = sum_5_minutes_lux_in / count_5_minutes
+                avg_5_minutes_temp_in = sum_5_minutes_temp_in / count_5_minutes
+                avg_5_minutes_hum_in = sum_5_minutes_hum_in / count_5_minutes
+                avg_5_minutes_co2_in = sum_5_minutes_co2_in / count_5_minutes
                 
                 # Reset 5-minutes accumulators
-                sum_5_minutes_lux = 0
-                sum_5_minutes_temp = 0
-                sum_5_minutes_hum = 0
-                sum_5_minutes_co2 = 0
+                sum_5_minutes_lux_out = 0
+                sum_5_minutes_temp_out = 0
+                sum_5_minutes_hum_out = 0
+                sum_5_minutes_co2_out = 0
+                
+                sum_5_minutes_lux_in = 0
+                sum_5_minutes_temp_in = 0
+                sum_5_minutes_hum_in = 0
+                sum_5_minutes_co2_in = 0
+                
                 count_5_minutes = 0
                 
                 last_5_minutes = current_time
                 
-                print("5-minutes averages:", avg_5_minutes_lux, avg_5_minutes_temp, avg_5_minutes_hum, avg_5_minutes_co2)
+                print("5-minutes averages outdoor:", avg_5_minutes_lux_out, avg_5_minutes_temp_out, avg_5_minutes_hum_out, avg_5_minutes_co2_out)
+                print("5-minutes averages indoor:", avg_5_minutes_lux_in, avg_5_minutes_temp_in, avg_5_minutes_hum_in, avg_5_minutes_co2_in)
                 
                 # Appending the new measurements to the list
                 calculate_time = count_time_measurements * 300
                 time_measurements.append(calculate_time)
                 
                 # Append twice because the DRL model need 4 data but in real experiment only need 3
-                lux_outdoor_measurements.append(avg_5_minutes_lux)
-                temp_outdoor_measurements.append(avg_5_minutes_temp)
-                hum_outdoor_measurements.append(avg_5_minutes_hum)
-                co2_outdoor_measurements.append(avg_5_minutes_co2)
+                # Outdoor measurements
+                lux_outdoor_measurements.append(avg_5_minutes_lux_out)
+                temp_outdoor_measurements.append(avg_5_minutes_temp_out)
+                hum_outdoor_measurements.append(avg_5_minutes_hum_out)
+                co2_outdoor_measurements.append(avg_5_minutes_co2_out)
+                
+                # Indoor measurements
+                lux_indoor_measurements.append(avg_5_minutes_lux_in)
+                temp_indoor_measurements.append(avg_5_minutes_temp_in)
+                hum_indoor_measurements.append(avg_5_minutes_hum_in)
+                co2_indoor_measurements.append(avg_5_minutes_co2_in)
                 
                 print("TIME OUTDOOR MEASUREMENTS: ", time_measurements)
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
                 print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
                 print("HUM OUTDOOR MEASUREMENTS: ", hum_outdoor_measurements)
                 print("CO2 OUTDOOR MEASUREMENTS: ", co2_outdoor_measurements)
+                
+                print("LUX INDOOR MEASUREMENTS: ", lux_indoor_measurements)
+                print("TEMP INDOOR MEASUREMENTS: ", temp_indoor_measurements)
+                print("HUM INDOOR MEASUREMENTS: ", hum_indoor_measurements)
+                print("CO2 INDOOR MEASUREMENTS: ", co2_indoor_measurements)
                 
                 if count_time_measurements == 4:
                     
@@ -245,9 +335,13 @@ try:
                     # Format data into JSON format
                     json_data = mqtt_comm.format_data_in_JSON(time_measurements, \
                                                             lux_outdoor_measurements, \
+                                                            lux_indoor_measurements, \
                                                             temp_outdoor_measurements, \
+                                                            temp_indoor_measurements, \
                                                             hum_outdoor_measurements, \
-                                                            co2_outdoor_measurements)
+                                                            hum_indoor_measurements, \
+                                                            co2_outdoor_measurements, \
+                                                            co2_indoor_measurements)
                                 
                     # Publish it to the server
                     mqtt_comm.publish_mqtt_data(json_data)
@@ -259,6 +353,11 @@ try:
                     temp_outdoor_measurements = []
                     hum_outdoor_measurements = []
                     co2_outdoor_measurements = []
+                    
+                    lux_indoor_measurements = []
+                    temp_indoor_measurements = []
+                    hum_indoor_measurements = []
+                    co2_indoor_measurements = []
                     
         if subscribe_mqtt_flag == True and controls_flag == True:
             drl_time, drl_ventilation, drl_toplights, drl_heater = mqtt_comm.subscribe_mqtt_data()

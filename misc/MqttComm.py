@@ -62,7 +62,7 @@ class MqttComm:
         # print("JSON DATA: ", json_data)
         return json_data
     
-    def publish_mqtt_data(self, json_data, broker="localhost", port=1883, topic="greenhouse-iot-system/outdoor-measurements"):
+    def publish_mqtt_data(self, json_data, broker="localhost", port=1883, topic="greenhouse-iot-system/outdoor-indoor-measurements"):
         '''
         Publish JSON data to a MQTT broker.
         

@@ -188,7 +188,7 @@ try:
                 averaged_light = bh1750_sensors.average_sensor_data(3, address, light)
                 
                 # Add averaged light to the sum
-                light_in_sum += averaged_light
+                light_in_sum += averaged_light 
                 count_light += 1
                 
                 if iteration % time_period == 0:                       
@@ -206,6 +206,8 @@ try:
                 count_temp += 1
                 
                 # Add averaged humitidy to the sum
+                hum_in_sum += averaged_humidity
+                count_hum += 1
                 
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
@@ -227,7 +229,7 @@ try:
         
         # Calculate the overall average temperature
         if count_light > 0 and count_temp > 0 and count_co2 > 0 and count_hum > 0:
-            overall_average_light = light_in_sum / count_light
+            overall_average_light = (light_in_sum / count_light) * 0.0079 # https://www.researchgate.net/post/Howto_convert_solar_intensity_in_LUX_to_watt_per_meter_square_for_sunlight#:~:text=The%20LUX%20meter%20is%20used,of%20the%20incident%20solar%20radiation.&text=multiply%20lux%20to%200.0079%20which%20give%20you%20value%20of%20w%2Fm2.
             overall_average_temperature = temp_in_sum / count_temp
             overall_average_humidity = hum_in_sum / count_hum
             overall_average_co2 = co2_in_sum / count_co2
@@ -240,7 +242,7 @@ try:
         
         if publish_mqtt_flag == True:
             # Accumulate 5-minutes outdoor measurements
-            sum_5_minutes_lux_out += av_lux
+            sum_5_minutes_lux_out += av_lux * 0.0079
             sum_5_minutes_temp_out += av_temp
             sum_5_minutes_hum_out += av_hum
             sum_5_minutes_co2_out += av_co2
@@ -256,7 +258,7 @@ try:
             # Calculate and send 5-minutes average data
 
             # if (current_time - last_5_minutes).seconds >= 300:
-            if (current_time - last_5_minutes).seconds >= 3:
+            if (current_time - last_5_minutes).seconds >= 5:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -416,7 +418,7 @@ try:
             
         # Calculate 15-minutes interval
         # if (current_time - last_15_minutes).seconds >= 1200:
-        if (current_time - last_15_minutes).seconds >= 12:
+        if (current_time - last_15_minutes).seconds >= 20:
             last_15_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

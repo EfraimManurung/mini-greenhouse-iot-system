@@ -69,16 +69,3 @@ class SensorBme280:
         print("AVERAGED VALUES from Address 0x{:02X}, Av_Temp={:.2f}ºC, Av_Humidity={:.2f}, Av_Pressure={:.2f}".format(address, _averaged_temperature, _averaged_humidity, _averaged_pressure))
 
         return _averaged_temperature, _averaged_humidity, _averaged_pressure
-
-    def write_sensor_data(self, address, temperature, humidity, pressure):
-        # Check if the file exists before opening it in 'a' mode (append mode)
-        file_exists = os.path.isfile('sensor_readings_bme280.txt')
-        
-        # Open the file using a context manager
-        with open('sensor_readings_bme280.txt', 'a') as file:
-            # Write the header to the file if the file does not exist
-            if not file_exists:
-                file.write('Time and Data, sensor address, temperature (ºC), humidity (%), pressure (hPa)\n')
-            
-            # Write sensor data to the file
-            file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', 0x{:02X}, {:.2f}, {:.2f}, {:.2f}\n'.format(address, temperature, humidity, pressure))

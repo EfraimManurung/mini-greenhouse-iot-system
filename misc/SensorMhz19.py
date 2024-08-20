@@ -54,16 +54,3 @@ class SensorMhz19:
         print("AVERAGED VALUES from Inside CO2 {}, Av_CO2={:.2f} ppm, Av_Temp={:.2f}".format(self.UART_address, _averaged_co2, _averaged_temp))
             
         return _averaged_co2, _averaged_temp
-
-    def write_sensor_data(self, _averaged_co2, _averaged_temp):
-        # Check if the file exists before opening it in 'a' mode (append mode)
-        file_exists = os.path.isfile('sensor_readings_mhz19c.txt')
-        
-        # Open the file using a context manager
-        with open('sensor_readings_mhz19c.txt', 'a') as file:
-            # Write the header to the file if the file does not exist
-            if not file_exists:
-                file.write('Time and Data, co2(ppm), temperature(ºC)\n')
-            
-            # Write sensor data to the file
-            file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', {:.2f}, {:.2f}\n'.format(_averaged_co2, _averaged_temp))

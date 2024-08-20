@@ -27,26 +27,6 @@ class ActuatorLED:
     def LED_ON(self, duty_cycle):
         self._PWM.ChangeDutyCycle(duty_cycle)
         
-    def actuate_LED(self, current_value, set_point, duty_cycle):
-        # handle if the current_value is None  
-        print("CURRENT VALUE LIGHT: ", current_value)
-        print("SET POINT LIGHT: ", set_point)
-        
-        if current_value < set_point:
-            self._PWM.ChangeDutyCycle(duty_cycle)
-            print("LIGHT TURN ON!!")
-        else:
-            self._PWM.ChangeDutyCycle(0)
-            print("LIGHT TURN OFF!!")
-    
-    def blink_LED(self, duty_cycle):
-        # Start the PWM pin set as 50% so it can blink 
-        self._PWM.start(duty_cycle)
-    
-    def stop_blink_LED(self):
-        # Stop the PWM pin 
-        self._PWM.stop()
-    
     def GPIO_cleanup(self):
         GPIO.cleanup()
         

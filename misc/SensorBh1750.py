@@ -64,19 +64,3 @@ class SensorBh1750:
             print("AVERAGED VALUES from Address 0x{:02x}, Av_Light={:.2f} lux".format(address, _averaged_light))
         
         return _averaged_light 
-
-
-    def write_sensor_data(self, address, light):
-        # Check if the file exists before opening it in 'a' mode (append mode)
-        file_exists = os.path.isfile('sensor_readings_bh1750.txt')
-        
-        # Open the file using a context manager
-        with open('sensor_readings_bh1750.txt', 'a') as file:
-            # Write the header to the file if the file does not exist
-            if not file_exists:
-                file.write('Time and Data, sensor address, light(lux)\n')
-            
-            # Write sensor data to the file
-            file.write(time.strftime('%H:%M:%S %d/%m/%Y') + ', 0x{:02X}, {:.2f}\n'.format(address, light))
-            
-        

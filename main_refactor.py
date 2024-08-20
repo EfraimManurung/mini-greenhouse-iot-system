@@ -28,9 +28,6 @@ from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
 from misc.ActuatorGPIO import ActuatorGPIO
 
-# Import PID library
-from simple_pid import PID
-
 # Initialize I2C bus
 bus = smbus2.SMBus(1)
 
@@ -44,11 +41,7 @@ outdoor_sensor_adress_baudrate = 9600
 # List of GPIOs
 LEDStrip_GPIO = 17
 LEDBlink_GPIO = 12
-
 FAN_GPIO = 26
-HUMIDIFIER_GPIO = 16
-# HEATER_GPIO = 6
-# FAN_HEATER_GPIO = 5
 
 # PWM Frequency
 PWM_frequency = 50
@@ -71,9 +64,6 @@ LEDStrip_actuator = ActuatorLED(LEDStrip_GPIO, PWM_frequency)
 LEDBlink_actuator = ActuatorLED(LEDBlink_GPIO, PWM_frequency_for_blinking)
 
 FAN_actuator = ActuatorFAN(FAN_GPIO, PWM_frequency)
-HUMIDIFIER_actuator = ActuatorGPIO(HUMIDIFIER_GPIO)
-# HEATER_actuator = ActuatorGPIO(HEATER_GPIO)
-# FAN_HEATER_actuator = ActuatorGPIO(FAN_HEATER_GPIO)
 
 # Initialized setpoints
 # Control parameters                            Unit                    Descriptions
@@ -164,16 +154,7 @@ def control_fan(temperature, humidity, iteration):
 try:
     iteration = 0
     
-    # Testing
-    # FAN_actuator.actuate_FAN(100)
-    # LEDStrip_actuator.LED_ON(100)
-    
     while True:
-        # Testing ALL THE ACTUATORS with this METHODS
-        # HUMIDIFIER_actuator.actuate_GPIO_HIGH()
-        # FAN_actuator.actuate_FAN(100)
-        # LEDStrip_actuator.actuate_LED(10.0, light_set_point, 100)
-    
         iteration += 1
         print("Iteration : ", iteration)
         LEDBlink_actuator.LED_ON(DT_blink)
@@ -249,10 +230,6 @@ except KeyboardInterrupt:
     LEDStrip_actuator.GPIO_cleanup()
     LEDBlink_actuator.GPIO_cleanup()
     FAN_actuator.GPIO_cleanup()
-    HUMIDIFIER_actuator.GPIO_cleanup()
-    # HEATER_actuator.GPIO_cleanup()
-    # FAN_HEATER_actuator.GPIO_cleanup()
-    
     print('Program stopped')
     
 except Exception as e:

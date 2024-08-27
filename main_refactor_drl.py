@@ -255,8 +255,8 @@ try:
             
             # Calculate and send 5-minutes average data
 
-            # if (current_time - last_5_minutes).seconds >= 300:
-            if (current_time - last_5_minutes).seconds >= 5:
+            if (current_time - last_5_minutes).seconds >= 300:
+            # if (current_time - last_5_minutes).seconds >= 5:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -390,18 +390,18 @@ try:
             
             # Control ventilation/fan
             if current_ventilation > 0.0:
-                print("FAN TURN ON!")
+                print("VENTILATION TURN ON!")
                 FAN_actuator.actuate_FAN(100) # Turn on FAN
             else:
-                print("FAN TURN OFF")
+                print("VENTILATION TURN OFF")
                 FAN_actuator.actuate_FAN(0)   # Turn off FAN
                 
             # Control lamps/LED Strip
             if current_lamps > 0.0:
-                print("LED STRIP TURN ON!")
+                print("TOPLIGHTS TURN ON!")
                 LEDStrip_actuator.LED_ON(100) # Turn on LED
             else:
-                print("LED STRIP TURN OFF!")
+                print("TOPLIGHTS TURN OFF!")
                 LEDStrip_actuator.LED_ON(0)  # Turn off LED
                 
             # Control heater
@@ -415,8 +415,8 @@ try:
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
         # Calculate 15-minutes interval
-        # if (current_time - last_15_minutes).seconds >= 1200:
-        if (current_time - last_15_minutes).seconds >= 20:
+        if (current_time - last_15_minutes).seconds >= 1200:
+        # if (current_time - last_15_minutes).seconds >= 20:
             last_15_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

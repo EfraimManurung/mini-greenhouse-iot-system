@@ -19,6 +19,7 @@ from misc.SensorBme280 import SensorBme280
 from misc.SensorBh1750 import SensorBh1750
 from misc.SensorMhz19 import SensorMhz19
 from misc.OutdoorSensors import OutdoorSensors
+from misc.LeafSensor import LeafSensor
 
 # Import for logging data
 from misc.LoggingData import LoggingData
@@ -34,8 +35,10 @@ bus = smbus2.SMBus(1)
 bme280_addresses = [0x76, 0x77]
 mhz19_address = '/dev/ttyAMA0'
 bh1750_addresses = [0x23, 0x5c] 
-outdoor_sensor_adress = '/dev/ttyUSB0'
-outdoor_sensor_adress_baudrate = 9600
+outdoor_sensor_address = '/dev/ttyUSB0'
+leaf_sensor_address = '/dev/ttyUSB1'
+outdoor_sensor_address_baudrate = 9600
+leaf_sensor_address_baudrate = 9600
 
 # List of GPIOs
 LEDStrip_GPIO = 17
@@ -53,7 +56,8 @@ DT_blink = 50
 bme280_sensors = SensorBme280(bus)
 mhz19_sensor = SensorMhz19(mhz19_address)
 bh1750_sensors = SensorBh1750(bus)
-outdoor_sensors = OutdoorSensors(outdoor_sensor_adress, outdoor_sensor_adress_baudrate)
+outdoor_sensors = OutdoorSensors(outdoor_sensor_address, outdoor_sensor_address_baudrate)
+leaf_sensor = LeafSensor(leaf_sensor_address, leaf_sensor_address_baudrate)
 
 # Create an instance of the logging data class
 logging_data = LoggingData()
@@ -171,7 +175,7 @@ try:
         
             if iteration % time_period == 0:
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None, None)
                     
         # bh1750 sensors
         for address in bh1750_addresses:
@@ -181,7 +185,7 @@ try:
                 
                 if iteration % time_period == 0:                       
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                    logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
+                    logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None, None)
 
         # bme280 sensors
         temp_sum = 0  # Variable to store the sum of averaged temperatures
@@ -198,7 +202,7 @@ try:
                 
                 if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                    logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
+                    logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None, None)
         
         # Calculate the overall average temperature
         if count > 0:
@@ -222,8 +226,15 @@ try:
             # def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
             #                      humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None):
             if iteration % time_period == 0:
-                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
-
+                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2, None)
+        
+        # leaf sensor with serial connection
+        leaf_temp = leaf_sensor.read_sensor_data()
+        av_leaf_temp = leaf_sensor.average_sensor_data(3, leaf_temp)
+        if any(val is not None for val in [av_leaf_temp]):
+            if iteration % time_period == 0:
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, None, None, None, None, av_leaf_temp)
+            
 except KeyboardInterrupt:
     # Clean up all the GPIOs
     LEDStrip_actuator.GPIO_cleanup()

@@ -26,7 +26,6 @@ from misc.LoggingData import LoggingData
 # Import actuator classes
 from misc.ActuatorLED import ActuatorLED
 from misc.ActuatorFAN import ActuatorFAN
-from misc.ActuatorGPIO import ActuatorGPIO
 
 # Initialize I2C bus
 bus = smbus2.SMBus(1)

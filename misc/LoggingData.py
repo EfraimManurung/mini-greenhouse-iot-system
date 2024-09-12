@@ -32,7 +32,7 @@ class LoggingData:
     
     # Logs the data to your InfluxDB
     def send_to_influxdb(self, measurement = None, location = None, temperature = None, pressure = None, 
-                         humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None):
+                         humidity = None , light = None, co2 = None, temperature_co2 = None, ccs_co2 = None, ccs_tvco2 = None, leaf_temp = None):
         # Get the current UTC timestamp
         timestamp = datetime.datetime.now(datetime.timezone.utc)
 
@@ -54,7 +54,8 @@ class LoggingData:
                     "co2": co2,
                     "co2_temp": temperature_co2,
                     "ccs_co2": ccs_co2,
-                    "ccs_tvco2": ccs_tvco2
+                    "ccs_tvco2": ccs_tvco2,
+                    "leaf_temp": leaf_temp
                 }
             }
         ]

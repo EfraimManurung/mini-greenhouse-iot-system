@@ -256,7 +256,7 @@ try:
             # Calculate and send 5-minutes average data
 
             if (current_time - last_5_minutes).seconds >= 300:
-            # if (current_time - last_5_minutes).seconds >= 5:
+            # if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -416,7 +416,7 @@ try:
             
         # Calculate 15-minutes interval
         if (current_time - last_15_minutes).seconds >= 1200:
-        # if (current_time - last_15_minutes).seconds >= 20:
+        # if (current_time - last_15_minutes).seconds >= 12:
             last_15_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

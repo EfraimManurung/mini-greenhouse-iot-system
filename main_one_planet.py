@@ -7,6 +7,18 @@ efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
 
 Main program
+
+The reference control for the greenhouse 
+
+2.3.2. Reference control settings
+David Katzin, Leo F.M. Marcelis, Simon van Mourik,
+Energy savings in greenhouses by transition from high-pressure sodium to LED lighting,
+Applied Energy, Volume 281, 2021, 116019, ISSN 0306-2619,
+https://doi.org/10.1016/j.apenergy.2020.116019.
+(https://www.sciencedirect.com/science/article/pii/S0306261920314628)
+
+More details in the Efraim's master thesis:
+URL: 
 '''
 
 # Import libraries that needed for the project

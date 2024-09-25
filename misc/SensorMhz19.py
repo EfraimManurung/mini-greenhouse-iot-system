@@ -1,14 +1,12 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
-efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
 
 Project source: https://pypi.org/project/mh-z19/
 
 '''
 import time
-import os
 import mh_z19
 
 class SensorMhz19:

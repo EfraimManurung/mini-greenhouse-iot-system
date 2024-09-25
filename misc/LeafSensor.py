@@ -1,7 +1,7 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
-efraim.efraimpartoginahotasi@wur.nl
+
 efraim.manurung@gmail.com
 '''
 
@@ -17,7 +17,7 @@ class LeafSensor:
             self.ser.reset_input_buffer()
             print("LeafSensor Start!")
         except Exception as e:
-            print(f"Error: Failed to initialize OutdoorSensors: {e}")
+            print(f"Error: Failed to initialize LeafSensor: {e}")
             self.ser = None
 
     def read_sensor_data(self):
@@ -29,21 +29,30 @@ class LeafSensor:
             
             while True:
                 if self.ser.in_waiting > 0:
-                    line = self.ser.readline().decode('utf-8').rstrip()
-                    if line.startswith("leaf_temp: "):
-                        leaf_temp_value = float(line.split(" ")[1])
-                        
-                    # If all variables are received and not zero, return them
-                    if all(v not in (None, 0, 0.0) for v in [leaf_temp_value]):
-                        return leaf_temp_value
+                    line = self.ser.readline().decode('utf-8').strip()
                     
+                    try:
+                        # Check for the correct format and split the data
+                        if line.startswith("leaf_temp:"):
+                            leaf_temp_value = float(line.split(" ")[1].strip())
+                    
+                    except ValueError as e:
+                        # Handle incorrect data formatting and log the issue
+                        print(f"Data format error: {e}. Raw line: {line}")
+                        continue
+
+                    # If the value is valid (not None, 0, or 0.0), return it
+                    if leaf_temp_value not in (None, 0, 0.0):
+                        return leaf_temp_value
+
         except Exception as e:
             print(f"Error in reading sensor data: {e}")
             return None
 
     def average_sensor_data(self, _count, leaf_temp):
         try:
-            if any(val is None for val in [leaf_temp]):
+            # Ensure the temperature value is valid
+            if leaf_temp is None:
                 return None
 
             leaf_temp_total = 0

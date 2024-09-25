@@ -26,7 +26,7 @@ class MqttComm:
         self.message_received = False  # Initialize message_received flag
         self.received_data = None # To store received data
     
-    def format_data_in_JSON(self, time, par_out, par_in, temp_out, temp_in, hum_out, hum_in, co2_out, co2_in):
+    def format_data_in_JSON(self, time, par_out, par_in, temp_out, temp_in, hum_out, hum_in, co2_out, co2_in, leaf_temp):
         '''
         Convert data to JSON format and print it.
         
@@ -36,6 +36,7 @@ class MqttComm:
         - temperature
         - humidity
         - co2
+        - leaf temperature
         '''
         
         def convert_to_native(value):
@@ -55,7 +56,8 @@ class MqttComm:
             "hum_out": [convert_to_native(v) for v in hum_out],
             "hum_in": [convert_to_native(v) for v in hum_in],
             "co2_out": [convert_to_native(v) for v in co2_out],
-            "co2_in": [convert_to_native(v) for v in co2_in]
+            "co2_in": [convert_to_native(v) for v in co2_in],
+            "leaf_temp": [convert_to_native(v) for v in leaf_temp]
         }
 
         json_data = json.dumps(data, indent=4)

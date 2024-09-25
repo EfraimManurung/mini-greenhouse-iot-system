@@ -35,34 +35,41 @@ class OutdoorSensors:
 
             while True:
                 if self.ser.in_waiting > 0:
-                    line = self.ser.readline().decode('utf-8').rstrip()
-                    if line.startswith("lux: "):
-                        lux_value = float(line.split(" ")[1])
-                    elif line.startswith("temp: "):
-                        temp_value = float(line.split(" ")[1])
-                    elif line.startswith("hum: "):
-                        hum_value = float(line.split(" ")[1])
-                    elif line.startswith("ccs_co2: "):
-                        ccs_co2_value = float(line.split(" ")[1])
-                    elif line.startswith("ccs_tvco2: "):
-                        ccs_tvco2_value = float(line.split(" ")[1])
-                    elif line.startswith("co2: "):
-                        co2_value = float(line.split(" ")[1])
-                    elif line.startswith("temp_co2: "):
-                        temp_co2_value = float(line.split(" ")[1])
-                        
+                    line = self.ser.readline().decode('utf-8').strip()
                     
+                    try:
+                        # Basic cleaning of the input string
+                        if line.startswith("lux:"):
+                            lux_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("temp:"):
+                            temp_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("hum:"):
+                            hum_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("ccs_co2:"):
+                            ccs_co2_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("ccs_tvco2:"):
+                            ccs_tvco2_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("co2:"):
+                            co2_value = float(line.split(" ")[1].strip())
+                        elif line.startswith("temp_co2:"):
+                            temp_co2_value = float(line.split(" ")[1].strip())
+
+                    except ValueError as e:
+                        # Handle parsing issues and log them
+                        print(f"Data format error: {e}. Raw line: {line}")
+                        continue
 
                     # If all variables are received, return them
                     if all(v is not None for v in [lux_value, temp_value, hum_value, ccs_co2_value, ccs_tvco2_value, co2_value, temp_co2_value]):
                         return lux_value, temp_value, hum_value, ccs_co2_value, ccs_tvco2_value, co2_value, temp_co2_value
-                    
+
         except Exception as e:
             print(f"Error in reading sensor data: {e}")
             return None, None, None, None, None, None, None
 
     def average_sensor_data(self, _count, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2):
         try:
+            # If any value is None, return None for all
             if any(val is None for val in [lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2]):
                 return None, None, None, None, None, None, None
 
@@ -96,6 +103,7 @@ class OutdoorSensors:
                 averaged_lux, averaged_temp, averaged_hum, averaged_ccs_co2, averaged_ccs_tvco2, averaged_co2, averaged_temp_co2))
 
             return averaged_lux, averaged_temp, averaged_hum, averaged_ccs_co2, averaged_ccs_tvco2, averaged_co2, averaged_temp_co2
+
         except Exception as e:
             print(f"Error in averaging sensor data: {e}")
             return None, None, None, None, None, None, None

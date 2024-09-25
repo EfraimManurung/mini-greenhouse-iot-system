@@ -1,7 +1,6 @@
 '''
 Author: Efraim Manurung
 Information Technology Group, Wageningen University
-efraim.efraimpartoginahotasi@wur.nl
 efraim.manurung@gmail.com
 '''
 

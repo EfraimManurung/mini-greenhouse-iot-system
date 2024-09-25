@@ -16,6 +16,7 @@ Main program
 import time
 from datetime import datetime
 import smbus2
+import numpy as np
 
 # Import sensor classes
 from misc.SensorBme280 import SensorBme280
@@ -154,18 +155,14 @@ count_light = 0
 av_leaf_temp = 0
 av_lux = av_temp = av_hum = av_ccs_co2 = av_ccs_tvco2 = av_co2 = av_temp_co2 = 0
 
-# To handle errors for serial communication with USB ports
-def safe_float_conversion(data):
-    """
-    Tries to convert data to float. If it fails, returns None.
-    """
-    try:
-        # Strip any extraneous characters like newline, carriage return, etc.
-        clean_data = data.strip()
-        return float(clean_data)
-    except (ValueError, TypeError) as e:
-        print(f"Error in converting data to float: {e}")
-        return None
+# Function to handle NaN and append the previous value
+def handle_nan_and_append(measurements_list, new_value):
+    if np.isnan(new_value):
+        # If the list is not empty, append the last valid value
+        if measurements_list:
+            new_value = measurements_list[-1]  # Use previous value
+
+    measurements_list.append(new_value)
 
 # Main loop 
 try:
@@ -262,7 +259,7 @@ try:
         
         # Calculate the overall average temperature
         if count_light > 0 and count_temp > 0 and count_co2 > 0 and count_hum > 0:
-            overall_average_light = (light_in_sum / count_light) * 0.0079 # https://www.researchgate.net/post/Howto_convert_solar_intensity_in_LUX_to_watt_per_meter_square_for_sunlight#:~:text=The%20LUX%20meter%20is%20used,of%20the%20incident%20solar%20radiation.&text=multiply%20lux%20to%200.0079%20which%20give%20you%20value%20of%20w%2Fm2.
+            overall_average_light = (light_in_sum / count_light) * 0.0079               # information about the unit https://www.researchgate.net/post/Howto_convert_solar_intensity_in_LUX_to_watt_per_meter_square_for_sunlight#:~:text=The%20LUX%20meter%20is%20used,of%20the%20incident%20solar%20radiation.&text=multiply%20lux%20to%200.0079%20which%20give%20you%20value%20of%20w%2Fm2.
             overall_average_temperature = temp_in_sum / count_temp
             overall_average_humidity = hum_in_sum / count_hum
             overall_average_co2 = co2_in_sum / count_co2
@@ -271,7 +268,6 @@ try:
             print(f"Overall average temperature: {overall_average_temperature}")
             print(f"Overall average humidity: {overall_average_humidity}")
             print(f"Overall average co2: {overall_average_co2}")
-        
         
         if publish_mqtt_flag == True:
             # Accumulate 5-minutes outdoor measurements
@@ -335,17 +331,17 @@ try:
                 
                 # Append twice because the DRL model need 4 data but in real experiment only need 3
                 # Outdoor measurements
-                lux_outdoor_measurements.append(avg_5_minutes_lux_out)
-                temp_outdoor_measurements.append(avg_5_minutes_temp_out)
-                hum_outdoor_measurements.append(avg_5_minutes_hum_out)
-                co2_outdoor_measurements.append(avg_5_minutes_co2_out)
-                
+                handle_nan_and_append(lux_outdoor_measurements, avg_5_minutes_lux_out)
+                handle_nan_and_append(temp_outdoor_measurements, avg_5_minutes_temp_out)
+                handle_nan_and_append(hum_outdoor_measurements, avg_5_minutes_hum_out)
+                handle_nan_and_append(co2_outdoor_measurements, avg_5_minutes_co2_out)
+
                 # Indoor measurements
-                lux_indoor_measurements.append(avg_5_minutes_lux_in)
-                temp_indoor_measurements.append(avg_5_minutes_temp_in)
-                hum_indoor_measurements.append(avg_5_minutes_hum_in)
-                co2_indoor_measurements.append(avg_5_minutes_co2_in)
-                leaf_temp_measurements.append(avg_5_minutes_leaf_temp)
+                handle_nan_and_append(lux_indoor_measurements, avg_5_minutes_lux_in)
+                handle_nan_and_append(temp_indoor_measurements, avg_5_minutes_temp_in)
+                handle_nan_and_append(hum_indoor_measurements, avg_5_minutes_hum_in)
+                handle_nan_and_append(co2_indoor_measurements, avg_5_minutes_co2_in)
+                handle_nan_and_append(leaf_temp_measurements, avg_5_minutes_leaf_temp)
                 
                 print("TIME OUTDOOR MEASUREMENTS: ", time_measurements)
                 print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)

@@ -287,8 +287,8 @@ try:
             
             # Calculate and send 5-minutes average data
 
-            if (current_time - last_5_minutes).seconds >= 300:
-            # if (current_time - last_5_minutes).seconds >= 3:
+            # if (current_time - last_5_minutes).seconds >= 300:
+            if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -344,16 +344,16 @@ try:
                 handle_nan_and_append(leaf_temp_measurements, avg_5_minutes_leaf_temp)
                 
                 print("TIME OUTDOOR MEASUREMENTS: ", time_measurements)
-                print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements)
-                print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements)
-                print("HUM OUTDOOR MEASUREMENTS: ", hum_outdoor_measurements)
-                print("CO2 OUTDOOR MEASUREMENTS: ", co2_outdoor_measurements)
+                print("LUX OUTDOOR MEASUREMENTS: ", lux_outdoor_measurements[-4:])
+                print("TEMP OUTDOOR MEASUREMENTS: ", temp_outdoor_measurements[-4:])
+                print("HUM OUTDOOR MEASUREMENTS: ", hum_outdoor_measurements[-4:])
+                print("CO2 OUTDOOR MEASUREMENTS: ", co2_outdoor_measurements[-4:])
                 
-                print("LUX INDOOR MEASUREMENTS: ", lux_indoor_measurements)
-                print("TEMP INDOOR MEASUREMENTS: ", temp_indoor_measurements)
-                print("HUM INDOOR MEASUREMENTS: ", hum_indoor_measurements)
-                print("CO2 INDOOR MEASUREMENTS: ", co2_indoor_measurements)
-                print("LEAF TEMP INDOOR MEASUREMENTS: ", leaf_temp_measurements)
+                print("LUX INDOOR MEASUREMENTS: ", lux_indoor_measurements[-4:])
+                print("TEMP INDOOR MEASUREMENTS: ", temp_indoor_measurements[-4:])
+                print("HUM INDOOR MEASUREMENTS: ", hum_indoor_measurements[-4:])
+                print("CO2 INDOOR MEASUREMENTS: ", co2_indoor_measurements[-4:])
+                print("LEAF TEMP INDOOR MEASUREMENTS: ", leaf_temp_measurements[-4:])
                 
                 if count_time_measurements == 4:
                     
@@ -370,15 +370,15 @@ try:
                     
                     # Format data into JSON format
                     json_data = mqtt_comm.format_data_in_JSON(time_measurements, \
-                                                            lux_outdoor_measurements, \
-                                                            lux_indoor_measurements, \
-                                                            temp_outdoor_measurements, \
-                                                            temp_indoor_measurements, \
-                                                            hum_outdoor_measurements, \
-                                                            hum_indoor_measurements, \
-                                                            co2_outdoor_measurements, \
-                                                            co2_indoor_measurements, \
-                                                            leaf_temp_measurements)
+                                                            lux_outdoor_measurements[-4:], \
+                                                            lux_indoor_measurements[-4:], \
+                                                            temp_outdoor_measurements[-4:], \
+                                                            temp_indoor_measurements[-4:], \
+                                                            hum_outdoor_measurements[-4:], \
+                                                            hum_indoor_measurements[-4:], \
+                                                            co2_outdoor_measurements[-4:], \
+                                                            co2_indoor_measurements[-4:], \
+                                                            leaf_temp_measurements[-4:])
                                 
                     # Publish it to the server
                     mqtt_comm.publish_mqtt_data(json_data)
@@ -386,16 +386,16 @@ try:
                     # Reset the outdoor measurements
                     # List for the outdoor measurements
                     time_measurements = []
-                    lux_outdoor_measurements = []
-                    temp_outdoor_measurements = []
-                    hum_outdoor_measurements = []
-                    co2_outdoor_measurements = []
+                    # lux_outdoor_measurements = []
+                    # temp_outdoor_measurements = []
+                    # hum_outdoor_measurements = []
+                    # co2_outdoor_measurements = []
                     
-                    lux_indoor_measurements = []
-                    temp_indoor_measurements = []
-                    hum_indoor_measurements = []
-                    co2_indoor_measurements = []
-                    leaf_temp_measurements = []
+                    # lux_indoor_measurements = []
+                    # temp_indoor_measurements = []
+                    # hum_indoor_measurements = []
+                    # co2_indoor_measurements = []
+                    # leaf_temp_measurements = []
                     
         if subscribe_mqtt_flag == True and controls_flag == True:
             drl_time, drl_ventilation, drl_toplights, drl_heater = mqtt_comm.subscribe_mqtt_data()
@@ -452,8 +452,8 @@ try:
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
         # Calculate 15-minutes interval
-        if (current_time - last_15_minutes).seconds >= 1200:
-        # if (current_time - last_15_minutes).seconds >= 12:
+        # if (current_time - last_15_minutes).seconds >= 1200:
+        if (current_time - last_15_minutes).seconds >= 12:
             last_15_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

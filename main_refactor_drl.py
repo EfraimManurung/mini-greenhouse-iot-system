@@ -89,7 +89,7 @@ time_period = 20
 
 # Initialize time tracking
 last_5_minutes = datetime.now() # for the measurements
-last_15_minutes = datetime.now() # for the controls
+last_20_minutes = datetime.now() # for the controls
 
 # Sum variables for 5 minutes intervals
 sum_5_minutes_lux_out = 0
@@ -451,10 +451,10 @@ try:
                 HEATER_actuator.actuate_GPIO_LOW()     # Turn heater off
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
-        # Calculate 15-minutes interval
-        # if (current_time - last_15_minutes).seconds >= 1200:
-        if (current_time - last_15_minutes).seconds >= 12:
-            last_15_minutes = current_time
+        # Calculate 20-minutes interval
+        # if (current_time - last_20_minutes).seconds >= 1200:
+        if (current_time - last_20_minutes).seconds >= 12:
+            last_20_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")
                 

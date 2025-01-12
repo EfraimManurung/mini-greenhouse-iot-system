@@ -202,9 +202,9 @@ try:
             co2_in_sum += averaged_co2
             count_co2 += 1
             
-            # if iteration % time_period == 0:
+            if iteration % time_period == 0:
                 # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                # logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, averaged_co2, averaged_temperature_co2, None, None)
                     
         # bh1750 sensors
         for address in bh1750_addresses:
@@ -216,9 +216,9 @@ try:
                 light_in_sum += averaged_light 
                 count_light += 1
                 
-                # if iteration % time_period == 0:                       
+                if iteration % time_period == 0:                       
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                    # logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
+                    logging_data.send_to_influxdb("greenhouse_measurements", address, None, None, None, averaged_light, None, None, None, None)
 
         # bme280 sensors
         for address in bme280_addresses:
@@ -234,17 +234,17 @@ try:
                 hum_in_sum += averaged_humidity
                 count_hum += 1
                 
-                # if iteration % time_period == 0: 
+                if iteration % time_period == 0: 
                     # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-                    # logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
+                    logging_data.send_to_influxdb("greenhouse_measurements", address, averaged_temperature, averaged_pressure, averaged_humidity, None, None, None, None, None)
         
         # LT-1T-SDI12 sensor
         leaf_temp = leaf_sensor.read_sensor_data()
         if any(val is not None for val in [leaf_temp]):
             
             av_leaf_temp = leaf_sensor.average_sensor_data(3, leaf_temp)
-            # if iteration % time_period == 0:
-                # logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, None, None, None, None, av_leaf_temp)
+            if iteration % time_period == 0:
+                logging_data.send_to_influxdb("greenhouse_measurements", "inside", None, None, None, None, None, None, None, None, av_leaf_temp)
             
         # outdoor sensor with serial connection
         lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2  = outdoor_sensors.read_sensor_data()
@@ -254,8 +254,8 @@ try:
             av_lux, av_temp, av_hum, av_ccs_co2, av_ccs_tvco2, av_co2, av_temp_co2 = outdoor_sensors.average_sensor_data(3, lux, temp, hum, ccs_co2, ccs_tvco2, co2, temp_co2)
         
             # Send data to InfluxDB, omitting co2 and temperature_co2 if they are None
-            # if iteration % time_period == 0:
-                # logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
+            if iteration % time_period == 0:
+                logging_data.send_to_influxdb("greenhouse_measurements", "outdoor", av_temp, None, av_hum, av_lux, av_co2, av_temp_co2, av_ccs_co2, av_ccs_tvco2)
         
         # Calculate the overall average temperature
         if count_light > 0 and count_temp > 0 and count_co2 > 0 and count_hum > 0:
@@ -287,8 +287,8 @@ try:
             
             # Calculate and send 5-minutes average data
 
-            # if (current_time - last_5_minutes).seconds >= 300:
-            if (current_time - last_5_minutes).seconds >= 3:
+            if (current_time - last_5_minutes).seconds >= 300:
+            # if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -452,8 +452,8 @@ try:
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
             
         # Calculate 20-minutes interval
-        # if (current_time - last_20_minutes).seconds >= 1200:
-        if (current_time - last_20_minutes).seconds >= 12:
+        if (current_time - last_20_minutes).seconds >= 1200:
+        # if (current_time - last_20_minutes).seconds >= 12:
             last_20_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")

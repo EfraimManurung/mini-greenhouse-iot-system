@@ -287,8 +287,8 @@ try:
             
             # Calculate and send 5-minutes average data
 
-            if (current_time - last_5_minutes).seconds >= 300:
-            # if (current_time - last_5_minutes).seconds >= 3:
+            # if (current_time - last_5_minutes).seconds >= 300:
+            if (current_time - last_5_minutes).seconds >= 3:
                 
                 # Count if exceed 4 times then it is equal to 20 minutes
                 count_time_measurements += 1
@@ -429,31 +429,37 @@ try:
             if current_ventilation > 0.0:
                 print("VENTILATION TURN ON!")
                 FAN_actuator.actuate_FAN(100) # Turn on FAN
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 1)
             else:
                 print("VENTILATION TURN OFF")
                 FAN_actuator.actuate_FAN(0)   # Turn off FAN
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "fan", 0)
                 
             # Control lamps/LED Strip
             if current_lamps > 0.0:
                 print("TOPLIGHTS TURN ON!")
                 LEDStrip_actuator.LED_ON(100) # Turn on LED
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 1)
             else:
                 print("TOPLIGHTS TURN OFF!")
                 LEDStrip_actuator.LED_ON(0)  # Turn off LED
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "led", 0)
                 
             # Control heater
             if current_heater > 0.0:
                 print("HEATER TURN ON!")
                 HEATER_actuator.actuate_GPIO_HIGH()     # Turn heater on
                 FAN_HEATER_actuator.actuate_GPIO_HIGH() # Turn FAN heater on
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 1)
             else:
                 print("HEATER TURN OFF!")
                 HEATER_actuator.actuate_GPIO_LOW()     # Turn heater off
                 FAN_HEATER_actuator.actuate_GPIO_LOW() # Turn FAN heater off
+                logging_data.send_to_influxdb_data_control("greenhouse_measurements", "heater", 0)
             
         # Calculate 20-minutes interval
-        if (current_time - last_20_minutes).seconds >= 1200:
-        # if (current_time - last_20_minutes).seconds >= 12:
+        # if (current_time - last_20_minutes).seconds >= 1200:
+        if (current_time - last_20_minutes).seconds >= 12:
             last_20_minutes = current_time
             controls_flag = True
             print("CONTROLS FLAG TRUE!!")
